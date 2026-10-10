@@ -5,6 +5,8 @@
 --   e.g. published "1600" per "40 Kg"   ->  price_per_kg = 40.00
 -- Until replaced, rows say source = 'ILLUSTRATIVE' and the UI shows that word. Never present them as real.
 -- Re-running this file replaces all reference prices.
+-- D0.1 check (2026-10-10): amis.pk (unit "Rs/100Kg") had no Potato Fresh or Potato Store price for Lahore or Okara
+-- on 05-10 Oct 2026, so these rows stay ILLUSTRATIVE. Re-check AMIS later and replace if prices appear.
 
 delete from reference_prices;
 
