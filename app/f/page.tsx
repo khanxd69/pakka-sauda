@@ -15,6 +15,7 @@ export default async function FarmerHome() {
     getSaudasForUser(user),
   ]);
   const activeSaudas = saudas.filter((s) => s.status !== 'settled' && s.status !== 'cancelled').length;
+  const needsAction = saudas.some((s) => s.status === 'collected' || s.status === 'agreed');
   const open = listings.filter((l) => l.status === 'open');
 
   return (
@@ -30,7 +31,7 @@ export default async function FarmerHome() {
       >
         🥔
       </ScreenTitle>
-      <HomeTiles offers={offers.length} saudas={activeSaudas} />
+      <HomeTiles offers={offers.length} saudas={activeSaudas} needsAction={needsAction} />
 
       {open.length > 0 ? (
         <section className="mt-8 flex flex-col gap-3">

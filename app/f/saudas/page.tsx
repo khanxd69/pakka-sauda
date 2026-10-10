@@ -9,7 +9,9 @@ import { requireUser } from '@/lib/session';
 
 export default async function FarmerSaudasPage() {
   const user = await requireUser('farmer');
-  const saudas = await getSaudasForUser(user);
+  // Saudas that need the farmer (collected, agreed) first, then the rest in their newest-first order.
+  const needs = (st: string) => (st === 'collected' || st === 'agreed' ? 0 : 1);
+  const saudas = (await getSaudasForUser(user)).sort((a, b) => needs(a.status) - needs(b.status));
   return (
     <>
       <AutoRefresh />
@@ -20,7 +22,7 @@ export default async function FarmerSaudasPage() {
           <Link
             key={s.id}
             href={`/f/saudas/${s.id}`}
-            className="flex items-center justify-between gap-3 rounded-2xl border-2 border-stone-200 bg-white p-4 active:scale-[0.98]"
+            className={`flex items-center justify-between gap-3 rounded-2xl border-2 bg-white p-4 active:scale-[0.98] ${needs(s.status) === 0 ? 'animate-pulse border-amber-400' : 'border-stone-200'}`}
           >
             <span className="flex flex-col">
               <span className="text-xl font-bold">{s.buyer.name_ur ?? s.buyer.name} صاحب</span>

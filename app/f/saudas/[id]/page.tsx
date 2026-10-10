@@ -19,7 +19,7 @@ export default async function FarmerSaudaPage({ params }: { params: Promise<{ id
       <AutoRefresh />
       <ScreenTitle>{STATUS_LABEL[sauda.status].ur}</ScreenTitle>
       <div className="flex flex-col gap-4">
-        <SaudaPanel status={sauda.status} />
+        <SaudaPanel sauda={sauda} />
         <SaudaTerms sauda={sauda} />
       </div>
     </>
