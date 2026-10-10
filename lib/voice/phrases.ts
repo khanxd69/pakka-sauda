@@ -66,3 +66,8 @@ export function explainCollection(
 export function askBalance(balance: number): string {
   return `کیا آپ کو باقی ${n(balance)} روپے مل گئے؟`;
 }
+
+/** F5 read-back of the farmer's own quality description and the grade it SUGGESTS (he confirms or changes it). */
+export function readBackQuality(a: { grade: Grade; description: string }): string {
+  return `آپ نے بتایا: ${a.description}۔ اس حساب سے آپ کے آلو گریڈ ${GRADE_UR[a.grade]} لگتے ہیں۔ کیا یہ ٹھیک ہے؟`;
+}

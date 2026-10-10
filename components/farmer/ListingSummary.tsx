@@ -3,17 +3,18 @@
 import { estimateToRange, formatRsPK, kgToMann } from '@/lib/format';
 import type { Grade } from '@/lib/types';
 import { READY_UR, type ReadyWhen } from '@/lib/voice/phrases';
-import { GradeCard } from './GradeCard';
-import { PotatoArt } from './PotatoArt';
+import { GRADE_LABEL_UR } from './GradeCard';
 
 const READY_ICON: Record<ReadyWhen, string> = { this_week: '/img/week-this.svg', next_week: '/img/week-next.svg', two_weeks: '/img/week-two.svg' };
 
-export function ListingSummary(a: { estimateKg: number; ready: ReadyWhen; expectedGrade: Grade; minPricePerMann: number }) {
+const LETTER: Record<Grade, string> = { A: 'bg-success-soft text-success', B: 'bg-warning-soft text-warning', C: 'bg-danger-soft text-danger' };
+
+export function ListingSummary(a: { estimateKg: number; ready: ReadyWhen; expectedGrade: Grade; minPricePerMann: number; qualityText?: string | null }) {
   const r = estimateToRange(a.estimateKg);
   return (
     <div className="flex flex-col divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface shadow-card">
       <div className="flex items-center gap-4 p-4">
-        <PotatoArt kind="crop" className="size-14 shrink-0 rounded-xl" />
+        <span className="text-3xl font-bold text-ink">آلو</span>
         <div className="flex flex-col">
           <span className="text-2xl font-semibold text-ink">
             <span dir="ltr" className="tabular-nums">
@@ -36,8 +37,14 @@ export function ListingSummary(a: { estimateKg: number; ready: ReadyWhen; expect
         </span>
         <span className="leading-[1.9]">{READY_UR[a.ready]}</span>
       </div>
-      <div className="p-3">
-        <GradeCard grade={a.expectedGrade} />
+      <div className="flex flex-col gap-2 p-4">
+        <div className="flex items-center gap-3">
+          <span dir="ltr" className={`rounded-md px-2 py-0.5 text-xl font-bold ${LETTER[a.expectedGrade]}`}>
+            {a.expectedGrade}
+          </span>
+          <span className="text-lg leading-[1.9] text-ink">{GRADE_LABEL_UR[a.expectedGrade]}</span>
+        </div>
+        {a.qualityText ? <p className="text-lg leading-[1.9] text-ink-muted">“{a.qualityText}”</p> : null}
       </div>
       <div className="flex items-baseline justify-center gap-2 p-4">
         <span dir="ltr" className="text-3xl font-semibold tabular-nums text-ink">

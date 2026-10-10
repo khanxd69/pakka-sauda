@@ -1,10 +1,11 @@
 {
   "home_welcome":      { "screen": "F1",  "ur": "السلام علیکم! پکا سودا میں خوش آمدید۔ فصل بیچنے کے لیے ہرا بٹن دبائیں۔", "roman": "Assalam-o-Alaikum! Pakka Sauda mein khush aamdeed. Fasal bechne ke liye hara button dabayein." },
   "home_new_offers":   { "screen": "F1",  "ur": "آپ کی فصل پر نئی بولیاں آئی ہیں۔ سننے کے لیے بولیوں والا بٹن دبائیں۔", "roman": "Aap ki fasal par nayi boliyan aayi hain. Sunne ke liye boliyon wala button dabayein." },
-  "crop_ask":          { "screen": "F2",  "ur": "کون سی فصل بیچنی ہے؟ تصویر پر انگلی رکھیں۔", "roman": "Kaun si fasal bechni hai? Tasveer par ungli rakhein." },
+  "crop_ask":          { "screen": "F2",  "ur": "کون سی فصل بیچنی ہے؟ مائیک کا بٹن دبا کر فصل کا نام بولیں، یا آلو والا بٹن دبائیں۔", "roman": "Kaun si fasal bechni hai? Mic ka button daba kar fasal ka naam bolein, ya aaloo wala button dabayein." },
+  "crop_only_potato":  { "screen": "F2",  "ur": "ابھی صرف آلو بیچے جا سکتے ہیں۔ آلو بولیں یا آلو والا بٹن دبائیں۔", "roman": "Abhi sirf aaloo beche ja sakte hain. Aaloo bolein ya aaloo wala button dabayein." },
   "qty_ask":           { "screen": "F3",  "ur": "کتنی فصل ہوگی؟ اندازہ بتا دیں۔ مائیک کا بٹن دبا کر بولیں، یا نمبر دبائیں۔", "roman": "Kitni fasal hogi? Andaza bata dein. Mic ka button daba kar bolein, ya number dabayein." },
   "ready_ask":         { "screen": "F4",  "ur": "فصل کب تیار ہوگی؟", "roman": "Fasal kab tayyar hogi?" },
-  "quality_ask":       { "screen": "F5",  "ur": "آلو کیسے ہیں؟ جو تصویر آپ کے آلو جیسی ہو، اس پر انگلی رکھیں۔", "roman": "Aaloo kaise hain? Jo tasveer aap ke aaloo jaisi ho, us par ungli rakhein." },
+  "quality_ask":       { "screen": "F5",  "ur": "آپ کے آلو کیسے ہیں؟ مائیک دبا کر بتائیں: آلو بڑے ہیں یا چھوٹے، داغ ہیں یا نہیں، سخت ہیں یا نرم۔", "roman": "Aap ke aaloo kaise hain? Mic daba kar batayein: aaloo bare hain ya chhote, daagh hain ya nahin, sakht hain ya naram." },
   "price_ask":         { "screen": "F6",  "ur": "کم از کم کیا ریٹ چاہیے؟ ایک من کا ریٹ بتائیں۔", "roman": "Kam az kam kya rate chahiye? Ek mann ka rate batayein." },
   "price_reference":   { "screen": "F6",  "ur": "آج کا منڈی ریٹ اسکرین پر لکھا ہے۔", "roman": "Aaj ka mandi rate screen par likha hai." },
   "confirm_hint":      { "screen": "F7",  "ur": "ٹھیک ہے تو ہرا بٹن دبائیں۔ کچھ بدلنا ہے تو پنسل والا بٹن دبائیں۔", "roman": "Theek hai to hara button dabayein. Kuch badalna hai to pencil wala button dabayein." },

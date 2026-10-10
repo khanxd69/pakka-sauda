@@ -1,7 +1,7 @@
 'use client';
 // Pakka Sauda: F2-F7 sell wizard. One question per screen, audio first, read-back before publishing. Owner: B.
 // All answers live in one state object; nothing is submitted before the F7 read-back.
-import { ArrowRight, Apple, Carrot, Check, Cherry, CircleCheck, House, Pencil, Wheat } from 'lucide-react';
+import { ArrowRight, Check, CircleCheck, House, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { createListing } from '@/app/actions/listings';
@@ -15,10 +15,10 @@ import type { Grade, ReferencePrice } from '@/lib/types';
 import { CLIPS, clipUrl, type ClipId } from '@/lib/voice/clips';
 import { readBackListing, type ReadyWhen } from '@/lib/voice/phrases';
 import { ActionBar, BigButton } from './BigButton';
-import { GradeCard } from './GradeCard';
+import { CropStep } from './CropStep';
 import { ListingSummary } from './ListingSummary';
-import { PotatoArt } from './PotatoArt';
 import { PromptHeading } from './PromptHeading';
+import { QualityStep } from './QualityStep';
 import { ReadyTiles } from './ReadyTiles';
 import { RefPriceCard } from './RefPriceCard';
 import { StepDots } from './StepDots';
@@ -42,6 +42,8 @@ interface SellState {
   expectedGrade: Grade | null;
   minPricePerMann: number | null;
   transcripts: string[];
+  qualityText?: string | null; // the farmer's own words about his potatoes (F5)
+  suggestedGrade?: Grade | null; // keyword suggestion from qualityText; he confirms or changes it
 }
 
 /** Local calendar date + n days as YYYY-MM-DD. */
@@ -52,10 +54,8 @@ function isoPlus(days: number): string {
 }
 const READY_DAYS: Record<ReadyWhen, [number, number]> = { this_week: [0, 6], next_week: [7, 13], two_weeks: [14, 20] };
 
-const GRADES: Grade[] = ['A', 'B', 'C'];
-const OTHER_CROPS = [Wheat, Carrot, Apple, Cherry]; // coming soon: shown greyed out
 const DRAFT_KEY = 'ps_sell_draft';
-const EMPTY: SellState = { qtyValue: null, unit: 'mann', ready: null, expectedGrade: null, minPricePerMann: null, transcripts: [] };
+const EMPTY: SellState = { qtyValue: null, unit: 'mann', ready: null, expectedGrade: null, minPricePerMann: null, transcripts: [], qualityText: null, suggestedGrade: null };
 
 export function SellWizard({ referencePrices }: { referencePrices: ReferencePrice[] }) {
   const [step, setStep] = useState<Step>('crop');
@@ -118,7 +118,7 @@ export function SellWizard({ referencePrices }: { referencePrices: ReferencePric
       minPricePerKg: perMannToPerKg(s.minPricePerMann),
       readyFrom: isoPlus(from),
       readyTo: isoPlus(to),
-      voiceTranscript: s.transcripts.join(' | ') || undefined,
+      voiceTranscript: [...s.transcripts, s.qualityText ? `معیار: ${s.qualityText}` : null].filter(Boolean).join(' | ') || undefined,
     });
     setBusy(false);
     if (res.ok) go('done');
@@ -155,21 +155,12 @@ export function SellWizard({ referencePrices }: { referencePrices: ReferencePric
         {step === 'review' ? null : <PromptHeading key={step} clip={CLIP[step]} autoPlay />}
 
         {step === 'crop' ? (
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={next}
-              className="col-span-2 flex min-h-40 items-center justify-center gap-4 rounded-2xl border border-brand bg-surface p-4 shadow-card ring-2 ring-brand/20 transition-transform active:scale-[0.99]"
-              aria-label="آلو / Potato"
-            >
-              <PotatoArt kind="crop" className="size-32 rounded-2xl" />
-            </button>
-            {OTHER_CROPS.map((Icon, i) => (
-              <div key={i} className="flex min-h-24 items-center justify-center rounded-2xl border border-dashed border-line-strong bg-subtle text-line-strong" aria-hidden>
-                <Icon className="size-10" strokeWidth={1.25} />
-              </div>
-            ))}
-          </div>
+          <CropStep
+            onPotato={(t) => {
+              if (t) update({ transcripts: addTranscript(`فصل: ${t}`) });
+              next();
+            }}
+          />
         ) : null}
 
         {step === 'qty' ? (
@@ -197,19 +188,16 @@ export function SellWizard({ referencePrices }: { referencePrices: ReferencePric
         ) : null}
 
         {step === 'quality' ? (
-          <div className="flex flex-col gap-3">
-            {GRADES.map((g) => (
-              <GradeCard
-                key={g}
-                grade={g}
-                selected={s.expectedGrade === g}
-                onSelect={() => {
-                  update({ expectedGrade: g });
-                  go('price');
-                }}
-              />
-            ))}
-          </div>
+          <QualityStep
+            description={s.qualityText ?? null}
+            suggested={s.suggestedGrade ?? null}
+            value={s.expectedGrade}
+            onDescribe={(text, g) => update({ qualityText: text, suggestedGrade: g, expectedGrade: null })}
+            onPick={(g) => {
+              update({ expectedGrade: g });
+              go('price');
+            }}
+          />
         ) : null}
 
         {step === 'price' ? (
@@ -236,7 +224,13 @@ export function SellWizard({ referencePrices }: { referencePrices: ReferencePric
               <p className="flex-1 text-xl font-semibold leading-[2] text-ink">{readBack}</p>
               <SpeakButton autoPlay text={readBack} />
             </div>
-            <ListingSummary estimateKg={estimateKg} ready={s.ready} expectedGrade={s.expectedGrade} minPricePerMann={s.minPricePerMann} />
+            <ListingSummary
+              estimateKg={estimateKg}
+              ready={s.ready}
+              expectedGrade={s.expectedGrade}
+              minPricePerMann={s.minPricePerMann}
+              qualityText={s.qualityText ?? null}
+            />
             <PromptHeading clip="confirm_hint" autoPlay size="md" />
           </div>
         ) : null}
