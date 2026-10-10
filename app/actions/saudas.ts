@@ -1,13 +1,20 @@
 'use server';
 // Pakka Sauda: sauda lifecycle actions. Owner: Workstream A. Signatures FROZEN (contracts-v1).
-// payToken is real (A1.6); the rest are stubs until A2.2-A2.6. All status changes go through lib/transition.ts.
+// Every status change goes through lib/transition.ts; every rupee amount comes from lib/settle.ts.
 import { revalidatePath } from 'next/cache';
 import { newCollectionCode } from '@/lib/rules';
-import { IdSchema, type CancelSaudaInput, type FarmerDisputeInput, type RecordCollectionInput } from '@/lib/schemas';
+import { statusAfterGrade } from '@/lib/sauda-machine';
+import {
+  CancelSaudaSchema, FarmerDisputeSchema, IdSchema, RecordCollectionSchema,
+  type CancelSaudaInput, type FarmerDisputeInput, type RecordCollectionInput,
+} from '@/lib/schemas';
 import { requireUser } from '@/lib/session';
-import { applyTransition } from '@/lib/transition';
+import { isShortfall, settle } from '@/lib/settle';
+import { applyCancel, applyTransition, loadSauda } from '@/lib/transition';
 import type { ActionResult, SaudaStatus } from '@/lib/types';
-import { notImplemented, run } from './_result';
+import { run } from './_result';
+
+const now = () => new Date().toISOString();
 
 /** Buyer pays the token (DEMO: no money moves). token_due -> awaiting_collection; issues collection_code. */
 export async function payToken(saudaId: string): Promise<ActionResult> {
@@ -20,7 +27,7 @@ export async function payToken(saudaId: string): Promise<ActionResult> {
       action: 'payToken',
       actor: user,
       to: 'awaiting_collection',
-      patch: { token_paid_at: new Date().toISOString(), collection_code: newCollectionCode() },
+      patch: { token_paid_at: now(), collection_code: newCollectionCode() },
       event: 'token_paid',
     });
     revalidatePath('/', 'layout');
@@ -30,30 +37,97 @@ export async function payToken(saudaId: string): Promise<ActionResult> {
 
 /** Buyer records weighed kg + grade (+ note). Stores settle() result. awaiting_collection -> collected. */
 export async function recordCollection(input: RecordCollectionInput): Promise<ActionResult> {
-  void input;
-  return notImplemented();
+  return run(async () => {
+    const user = await requireUser('wholesaler');
+    const v = RecordCollectionSchema.parse(input);
+    const s = await loadSauda(v.saudaId);
+    const r = settle(s.terms, v.weighedKg, v.grade);
+    await applyTransition({
+      saudaId: s.id,
+      action: 'recordCollection',
+      actor: user,
+      to: 'collected',
+      patch: {
+        weighed_kg: v.weighedKg,
+        delivered_grade: v.grade,
+        buyer_note: v.note ?? null,
+        final_amount: r.outcome === 'payable' ? r.finalAmount : null,
+        platform_fee: r.outcome === 'payable' ? r.fee : null,
+      },
+      event: 'collected',
+      payload: { weighed_kg: v.weighedKg, grade: v.grade, outcome: r.outcome },
+    });
+    revalidatePath('/', 'layout');
+    return null;
+  });
 }
 
 /** Farmer agrees with the recorded grade. collected -> agreed (priced grade) or cancelled/grade_not_accepted. */
 export async function farmerConfirm(saudaId: string): Promise<ActionResult<{ status: SaudaStatus }>> {
-  void saudaId;
-  return notImplemented();
+  return run(async () => {
+    const user = await requireUser('farmer');
+    const id = IdSchema.parse(saudaId);
+    const s = await loadSauda(id);
+    if (s.weighed_kg == null || s.delivered_grade == null) throw new Error(`BAD_TRANSITION:farmerConfirm:${s.status}`);
+    const to = statusAfterGrade(s.terms, s.weighed_kg, s.delivered_grade);
+    if (to === 'agreed') {
+      await applyTransition({ saudaId: id, action: 'farmerConfirm', actor: user, to: 'agreed', patch: { agreed_at: now() }, event: 'confirmed' });
+    } else {
+      await applyCancel({ saudaId: id, reason: 'grade_not_accepted', actor: user });
+    }
+    revalidatePath('/', 'layout');
+    return { status: to };
+  });
 }
 
 /** Farmer disputes the recorded grade. collected -> disputed. Nothing is loaded until resolved. */
 export async function farmerDispute(input: FarmerDisputeInput): Promise<ActionResult> {
-  void input;
-  return notImplemented();
+  return run(async () => {
+    const user = await requireUser('farmer');
+    const v = FarmerDisputeSchema.parse(input);
+    await applyTransition({
+      saudaId: v.saudaId,
+      action: 'farmerDispute',
+      actor: user,
+      to: 'disputed',
+      patch: { farmer_claimed_grade: v.claimedGrade, dispute_reason: v.reason ?? null },
+      event: 'disputed',
+      payload: { claimedGrade: v.claimedGrade, reason: v.reason ?? null },
+    });
+    revalidatePath('/', 'layout');
+    return null;
+  });
 }
 
 /** Farmer confirms he received the balance. agreed -> settled; platform fee becomes revenue. */
 export async function confirmBalanceReceived(saudaId: string): Promise<ActionResult> {
-  void saudaId;
-  return notImplemented();
+  return run(async () => {
+    const user = await requireUser('farmer');
+    const id = IdSchema.parse(saudaId);
+    await applyTransition({
+      saudaId: id,
+      action: 'confirmBalanceReceived',
+      actor: user,
+      to: 'settled',
+      patch: { settled_at: now() },
+      event: 'balance_received',
+    });
+    revalidatePath('/', 'layout');
+    return null;
+  });
 }
 
 /** Cancel with a reason; lib/sauda-machine.ts CANCEL_RULES decides who may and where the token goes. */
 export async function cancelSauda(input: CancelSaudaInput): Promise<ActionResult> {
-  void input;
-  return notImplemented();
+  return run(async () => {
+    const user = await requireUser();
+    const v = CancelSaudaSchema.parse(input);
+    if (v.reason === 'shortfall') {
+      const s = await loadSauda(v.saudaId);
+      if (s.weighed_kg == null || !isShortfall(s.terms, s.weighed_kg)) throw new Error('NOT_A_SHORTFALL');
+    }
+    await applyCancel({ saudaId: v.saudaId, reason: v.reason, actor: user });
+    revalidatePath('/', 'layout');
+    return null;
+  });
 }
