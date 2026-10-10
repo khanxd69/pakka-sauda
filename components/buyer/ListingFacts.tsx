@@ -52,6 +52,14 @@ export function ListingFacts({ listing: l }: { listing: ListingView }) {
             },
           ]}
         />
+        {l.voice_transcript ? (
+          <div className="flex flex-col gap-1.5 rounded-lg border border-line p-3">
+            <span className="text-xs font-medium text-ink-muted">Farmer&apos;s own words (spoken, not inspected)</span>
+            <p lang="ur" dir="rtl" className="font-urdu text-base leading-[1.9] text-ink">
+              {l.voice_transcript}
+            </p>
+          </div>
+        ) : null}
         <p className="flex items-start gap-2 text-xs text-ink-muted">
           <Info className="mt-0.5 size-3.5 shrink-0" strokeWidth={1.5} aria-hidden />
           Quantity and grade are the farmer&apos;s estimate. You pay for the kg weighed at collection, at your price for the grade recorded.
