@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { placeBid } from '@/app/actions/bids';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { CONFIG } from '@/lib/config';
@@ -62,58 +61,100 @@ export function BidForm({ listing, existing }: { listing: ListingView; existing:
     }
   }
 
-  const gradeRow = (g: 'B' | 'C', value: string, set: (v: string) => void, off: boolean, setOff: (v: boolean) => void) => (
-    <div className="flex flex-col gap-1">
-      <Label htmlFor={`price-${g}`}>Grade {g} (Rs/kg)</Label>
-      <div className="flex items-center gap-3">
-        <Input id={`price-${g}`} type="number" inputMode="decimal" min={0} step="0.5" value={off ? '' : value} disabled={off} onChange={(e) => set(e.target.value)} className="w-32" />
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={off} onChange={(e) => setOff(e.target.checked)} className="h-4 w-4" />
-          Don&apos;t accept {g}
-        </label>
+  const field = 'h-10 w-full rounded-lg border border-line-strong bg-surface px-3 text-sm tabular-nums text-ink transition-colors focus-visible:border-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/20 disabled:bg-subtle disabled:text-ink-muted';
+  const gradeRow = (g: 'A' | 'B' | 'C', value: string, set: (v: string) => void, off: boolean, setOff: ((v: boolean) => void) | null) => (
+    <div className="grid grid-cols-[3rem_1fr_auto] items-center gap-3">
+      <Label htmlFor={`price-${g}`} className="text-sm font-medium text-ink">
+        {g}
+        {g === listing.expected_grade ? <span className="ms-1 text-[10px] font-normal text-ink-muted">exp.</span> : null}
+      </Label>
+      <div className="relative">
+        <input
+          id={`price-${g}`}
+          type="number"
+          inputMode="decimal"
+          min={0}
+          step="0.5"
+          value={off ? '' : value}
+          disabled={off}
+          required={g === 'A'}
+          placeholder={off ? 'Not accepted' : '0'}
+          onChange={(e) => set(e.target.value)}
+          className={`${field} pe-14`}
+        />
+        <span className="pointer-events-none absolute inset-y-0 end-3 flex items-center text-xs text-ink-muted">Rs/kg</span>
       </div>
+      {setOff ? (
+        <label className="flex items-center gap-2 whitespace-nowrap text-[13px] text-ink-muted">
+          <input type="checkbox" checked={off} onChange={(e) => setOff(e.target.checked)} className="size-4 accent-brand" />
+          Don&apos;t accept
+        </label>
+      ) : (
+        <span className="text-[13px] text-ink-muted">Required</span>
+      )}
     </div>
   );
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-4 rounded-2xl border bg-white p-5">
-      <h2 className="text-lg font-semibold">{isUpdate ? 'Update your bid' : 'Place a bid'}</h2>
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="price-A">Grade A (Rs/kg) *</Label>
-        <Input id="price-A" type="number" inputMode="decimal" min={0} step="0.5" value={a} onChange={(e) => setA(e.target.value)} className="w-32" required />
+    <form onSubmit={submit} className="flex flex-col rounded-xl border border-line bg-surface shadow-card">
+      <div className="border-b border-line px-5 py-4">
+        <h2 className="text-base font-semibold text-ink">{isUpdate ? 'Update your bid' : 'Place a bid'}</h2>
+        <p className="text-[13px] text-ink-muted">Your price per kg for each grade. A lower grade may not pay more than a higher one.</p>
       </div>
-      {gradeRow('B', b, setB, noB, setNoB)}
-      {gradeRow('C', c, setC, noC, setNoC)}
-      <div className="flex flex-wrap gap-6">
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="date">Collection date</Label>
-          <Input id="date" type="date" value={date} min={listing.ready_from} onChange={(e) => setDate(e.target.value)} className="w-44" />
-        </div>
-        <fieldset className="flex flex-col gap-1">
-          <legend className="text-sm font-medium">Loading paid by</legend>
-          <div className="flex gap-4 pt-2 text-sm">
-            {(['buyer', 'farmer'] as const).map((v) => (
-              <label key={v} className="flex items-center gap-2 capitalize">
-                <input type="radio" name="loading" value={v} checked={loading === v} onChange={() => setLoading(v)} className="h-4 w-4" />
-                {v}
-              </label>
-            ))}
-          </div>
+      <div className="flex flex-col gap-5 px-5 py-4">
+        <fieldset className="flex flex-col gap-3">
+          <legend className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-muted">Grade price ladder</legend>
+          {gradeRow('A', a, setA, false, null)}
+          {gradeRow('B', b, setB, noB, setNoB)}
+          {gradeRow('C', c, setC, noC, setNoC)}
         </fieldset>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="date" className="text-[13px] text-ink-muted">Collection date</Label>
+            <input id="date" type="date" value={date} min={listing.ready_from} onChange={(e) => setDate(e.target.value)} className={field} />
+          </div>
+          <fieldset className="flex flex-col gap-1.5">
+            <legend className="mb-1.5 text-[13px] text-ink-muted">Loading paid by</legend>
+            <div className="grid grid-cols-2 rounded-lg border border-line-strong p-0.5">
+              {(['buyer', 'farmer'] as const).map((v) => (
+                <label
+                  key={v}
+                  className={`flex h-8 cursor-pointer items-center justify-center rounded-md text-sm capitalize transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand/30 ${
+                    loading === v ? 'bg-brand-soft font-medium text-brand' : 'text-ink-muted hover:text-ink'
+                  }`}
+                >
+                  <input type="radio" name="loading" value={v} checked={loading === v} onChange={() => setLoading(v)} className="sr-only" />
+                  {v}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="note" className="text-[13px] text-ink-muted">Note (optional)</Label>
+          <Textarea id="note" maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} rows={2} />
+        </div>
+
+        {priceA != null && priceA > 0 ? <BidPreviewTable preview={bidPreview(listing, prices)} feePercent={CONFIG.FEE_PERCENT} /> : null}
+
+        {ruleError ? (
+          <p role="alert" className="rounded-lg border border-danger/20 bg-danger-soft px-3 py-2 text-[13px] text-danger">
+            {BID_ERROR_TEXT[ruleError]}
+          </p>
+        ) : null}
+        {serverError && !ruleError ? (
+          <p role="alert" className="rounded-lg border border-danger/20 bg-danger-soft px-3 py-2 text-[13px] text-danger">
+            {serverError}
+          </p>
+        ) : null}
       </div>
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="note">Note (optional)</Label>
-        <Textarea id="note" maxLength={500} value={note} onChange={(e) => setNote(e.target.value)} rows={2} />
+      <div className="border-t border-line px-5 py-4">
+        <Button type="submit" disabled={busy || missing || !!ruleError} className="h-10 w-full text-sm">
+          {busy ? 'Saving…' : isUpdate ? 'Update bid' : 'Place bid'}
+        </Button>
       </div>
-
-      {priceA != null && priceA > 0 ? <BidPreviewTable preview={bidPreview(listing, prices)} feePercent={CONFIG.FEE_PERCENT} /> : null}
-
-      {ruleError ? <p className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{BID_ERROR_TEXT[ruleError]}</p> : null}
-      {serverError && !ruleError ? <p className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{serverError}</p> : null}
-
-      <Button type="submit" disabled={busy || missing || !!ruleError} className="h-11 bg-green-700 text-base text-white hover:bg-green-800">
-        {busy ? 'Saving…' : isUpdate ? 'Update bid' : 'Place bid'}
-      </Button>
     </form>
   );
 }

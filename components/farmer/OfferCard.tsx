@@ -1,5 +1,6 @@
 'use client';
 // Pakka Sauda: one buyer's offer for the farmer (F8): ladder per mann, net comparison, listen, accept. Owner: B.
+import { BadgeCheck, CalendarDays, Check, Store, Truck, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { acceptBid, rejectBid } from '@/app/actions/bids';
@@ -16,6 +17,7 @@ import { ConfirmSheet } from './ConfirmSheet';
 import { NetCompare } from './NetCompare';
 
 const GRADES: Grade[] = ['A', 'B', 'C'];
+const LETTER: Record<Grade, string> = { A: 'bg-success-soft text-success', B: 'bg-warning-soft text-warning', C: 'bg-danger-soft text-danger' };
 
 export function OfferCard({ bid, refPricePerKg }: { bid: BidView; refPricePerKg: number | null }) {
   const router = useRouter();
@@ -57,11 +59,19 @@ export function OfferCard({ bid, refPricePerKg }: { bid: BidView; refPricePerKg:
   }
 
   return (
-    <article className="flex flex-col gap-4 rounded-3xl border-2 border-stone-200 bg-white p-4 shadow-sm">
-      <header className="flex items-center justify-between gap-3">
-        <div className="flex flex-col">
-          <span className="text-2xl font-bold">{buyerNameUr} صاحب</span>
-          {bid.buyer.verified ? <span className="self-start rounded-full bg-green-100 px-3 text-lg text-green-800">✓</span> : null}
+    <article className="flex flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-card">
+      <header className="flex items-center gap-3 border-b border-line p-4">
+        <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
+          <Store className="size-6" strokeWidth={1.5} aria-hidden />
+        </span>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="truncate text-xl font-semibold leading-[1.9] text-ink">{buyerNameUr} صاحب</span>
+          {bid.buyer.verified ? (
+            <span className="inline-flex w-fit items-center gap-1 rounded-full bg-success-soft px-2.5 text-sm text-success">
+              <BadgeCheck className="size-4" strokeWidth={1.75} aria-hidden />
+              تصدیق شدہ
+            </span>
+          ) : null}
         </div>
         <SpeakButton
           text={explainOffer({
@@ -75,50 +85,57 @@ export function OfferCard({ bid, refPricePerKg }: { bid: BidView; refPricePerKg:
         />
       </header>
 
-      <table className="w-full text-xl">
-        <tbody>
+      <div className="flex flex-col gap-4 p-4">
+        <ul className="flex flex-col divide-y divide-line rounded-xl border border-line">
           {GRADES.map((g) => (
-            <tr key={g} className="border-b border-stone-100 last:border-0">
-              <td className="py-2">
-                <span dir="ltr" className={`inline-flex h-10 w-10 items-center justify-center rounded-lg font-black text-white ${g === 'A' ? 'bg-green-600' : g === 'B' ? 'bg-amber-500' : 'bg-red-600'}`}>
-                  {g}
+            <li key={g} className="flex items-center gap-3 px-3 py-2.5">
+              <span dir="ltr" className={`rounded-md px-2 py-0.5 text-base font-bold ${LETTER[g]}`}>
+                {g}
+              </span>
+              <span className="flex-1" />
+              {perMann[g] == null ? (
+                <span className="text-lg text-ink-muted">نہیں لیں گے</span>
+              ) : (
+                <span className="text-lg text-ink-muted">
+                  <span dir="ltr" className="text-2xl font-semibold tabular-nums text-ink">
+                    {formatRsPK(perMann[g]!)}
+                  </span>{' '}
+                  / من
                 </span>
-              </td>
-              <td className="py-2 text-left">
-                {perMann[g] == null ? (
-                  <span className="text-stone-500">نہیں لیں گے</span>
-                ) : (
-                  <span>
-                    <span dir="ltr" className="font-bold tabular-nums">{formatRsPK(perMann[g]!)}</span> / من
-                  </span>
-                )}
-              </td>
-            </tr>
+              )}
+            </li>
           ))}
-        </tbody>
-      </table>
+        </ul>
 
-      <div className="flex items-center justify-between text-lg">
-        <span>📅 {urduDate(bid.collection_date)}</span>
-        <span>🚚 {bid.loading_paid_by === 'buyer' ? 'خریدار' : 'آپ'}</span>
+        <div className="grid grid-cols-2 gap-3 text-lg">
+          <span className="flex items-center gap-2 rounded-xl bg-subtle px-3 py-2">
+            <CalendarDays className="size-5 shrink-0 text-ink-muted" strokeWidth={1.5} aria-hidden />
+            {urduDate(bid.collection_date)}
+          </span>
+          <span className="flex items-center gap-2 rounded-xl bg-subtle px-3 py-2">
+            <Truck className="size-5 shrink-0 text-ink-muted" strokeWidth={1.5} aria-hidden />
+            {bid.loading_paid_by === 'buyer' ? 'خریدار' : 'آپ'}
+          </span>
+        </div>
+
+        {net ? <NetCompare net={net} /> : null}
       </div>
 
-      {net ? <NetCompare net={net} /> : null}
-
-      <BigButton variant="go" icon="✓" onClick={() => setConfirming(true)}>
-        قبول کریں
-      </BigButton>
-
-      <BigButton variant="plain" icon="✗" onClick={() => setDeclining(true)}>
-        یہ نہیں
-      </BigButton>
+      <div className="flex flex-col gap-3 border-t border-line p-4">
+        <BigButton variant="go" icon={<Check strokeWidth={2.5} aria-hidden />} onClick={() => setConfirming(true)}>
+          قبول کریں
+        </BigButton>
+        <BigButton variant="plain" icon={<X strokeWidth={2} aria-hidden />} onClick={() => setDeclining(true)}>
+          یہ نہیں
+        </BigButton>
+      </div>
 
       <ConfirmSheet open={declining} clip="reject_confirm" busy={busy} onYes={decline} onNo={() => setDeclining(false)}>
-        <p className="text-center text-2xl font-bold">✗ یہ نہیں · {buyerNameUr} صاحب</p>
+        <p className="text-center text-xl font-semibold text-ink">{buyerNameUr} صاحب</p>
       </ConfirmSheet>
 
       <ConfirmSheet open={confirming} clip="accept_confirm" busy={busy} onYes={accept} onNo={() => setConfirming(false)}>
-        <p className="text-center text-2xl font-bold">{buyerNameUr} صاحب</p>
+        <p className="text-center text-xl font-semibold text-ink">{buyerNameUr} صاحب</p>
       </ConfirmSheet>
     </article>
   );

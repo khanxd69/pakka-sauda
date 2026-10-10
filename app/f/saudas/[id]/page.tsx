@@ -1,8 +1,8 @@
-// Pakka Sauda: F9 sauda card for the farmer. Owner: Workstream B. Party check, then terms + status panel.
+// Pakka Sauda: F9-F11 sauda card for the farmer. Owner: Workstream B. Party check, then status, progress, panel, terms.
 import { notFound } from 'next/navigation';
+import { Stepper } from '@/components/design/Stepper';
 import { SaudaPanel } from '@/components/farmer/SaudaPanel';
 import { SaudaTerms } from '@/components/farmer/SaudaTerms';
-import { ScreenTitle } from '@/components/farmer/ScreenTitle';
 import { AutoRefresh } from '@/components/shared/AutoRefresh';
 import { getSauda } from '@/lib/queries';
 import { STATUS_LABEL } from '@/lib/sauda-machine';
@@ -17,8 +17,11 @@ export default async function FarmerSaudaPage({ params }: { params: Promise<{ id
   return (
     <>
       <AutoRefresh />
-      <ScreenTitle>{STATUS_LABEL[sauda.status].ur}</ScreenTitle>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5 pt-5">
+        <div className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-4 shadow-card">
+          <h1 className="text-[28px] font-bold leading-[1.9] text-ink">{STATUS_LABEL[sauda.status].ur}</h1>
+          <Stepper status={sauda.status} lang="ur" orientation="vertical" />
+        </div>
         <SaudaPanel sauda={sauda} />
         <SaudaTerms sauda={sauda} />
       </div>

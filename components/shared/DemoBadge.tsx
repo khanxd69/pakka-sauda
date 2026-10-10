@@ -1,4 +1,12 @@
 // Pakka Sauda: marks every simulated money step. Owner: Workstream A. Real from Phase 0.
 export function DemoBadge({ text = 'DEMO: no real money moves' }: { text?: string }) {
-  return <span className="rounded bg-yellow-200 px-2 py-0.5 text-xs font-semibold text-yellow-900">{text}</span>;
+  return (
+    <span
+      dir="ltr"
+      className="inline-flex w-fit items-center gap-1 whitespace-nowrap rounded-full bg-attn-soft px-2 py-0.5 font-sans text-[11px] font-medium text-attn ring-1 ring-inset ring-attn/20"
+    >
+      <span className="size-1.5 rounded-full bg-current" aria-hidden />
+      {text}
+    </span>
+  );
 }

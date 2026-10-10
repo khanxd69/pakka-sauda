@@ -1,42 +1,41 @@
 // Pakka Sauda: frozen sauda terms for the wholesaler. Owner: Workstream D.
-import { DemoBadge } from '@/components/shared/DemoBadge';
+import { Card } from '@/components/design/Card';
+import { KeyValueList } from '@/components/design/KeyValueList';
+import { MoneyCell } from '@/components/design/MoneyCell';
 import { formatDate, formatKg, formatRs } from '@/lib/format';
-import type { SaudaView } from '@/lib/types';
+import type { Grade, SaudaView } from '@/lib/types';
 import { GradeBadge } from './ListingCard';
+
+const GRADES: Grade[] = ['A', 'B', 'C'];
 
 export function SaudaTermsCard({ sauda }: { sauda: SaudaView }) {
   const t = sauda.terms;
   return (
-    <section className="flex flex-col gap-3 rounded-2xl border bg-white p-5">
-      <h2 className="text-lg font-semibold">Terms (locked at acceptance)</h2>
-      <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
-        <dt className="text-stone-500">Farmer</dt>
-        <dd>
-          {sauda.farmer.name} · {sauda.listing.district}
-        </dd>
-        <dt className="text-stone-500">Ladder (Rs/kg)</dt>
-        <dd className="font-semibold">
-          A {t.price.A ?? 'not accepted'} · B {t.price.B ?? 'not accepted'} · C {t.price.C ?? 'not accepted'}
-        </dd>
-        <dt className="text-stone-500">Quantity</dt>
-        <dd>
-          {formatKg(t.qty_low_kg)} – {formatKg(t.qty_high_kg)}
-        </dd>
-        <dt className="text-stone-500">Expected grade</dt>
-        <dd>
-          <GradeBadge grade={t.expected_grade} />
-        </dd>
-        <dt className="text-stone-500">Collection date</dt>
-        <dd>{formatDate(t.collection_date)}</dd>
-        <dt className="text-stone-500">Loading paid by</dt>
-        <dd className="capitalize">{t.loading_paid_by}</dd>
-        <dt className="text-stone-500">Token</dt>
-        <dd className="flex items-center gap-2">
-          {formatRs(t.token_amount)} <DemoBadge />
-        </dd>
-        <dt className="text-stone-500">Platform fee</dt>
-        <dd>{t.fee_percent}% (paid by buyer on settlement)</dd>
-      </dl>
-    </section>
+    <Card title="Terms" description="Locked when the farmer accepted">
+      <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-3 overflow-hidden rounded-lg border border-line">
+          {GRADES.map((g) => (
+            <div key={g} className="flex flex-col gap-1 border-e border-line p-3 last:border-e-0">
+              <span className="text-xs font-medium text-ink-muted">Grade {g}</span>
+              <span className={`text-lg font-semibold tabular-nums ${t.price[g] == null ? 'text-ink-muted' : 'text-ink'}`}>
+                {t.price[g] == null ? '—' : formatRs(t.price[g]!)}
+              </span>
+              <span className="text-[11px] text-ink-muted">{t.price[g] == null ? 'Not accepted' : 'per kg'}</span>
+            </div>
+          ))}
+        </div>
+        <KeyValueList
+          items={[
+            { label: 'Farmer', value: `${sauda.farmer.name} · ${sauda.listing.district}` },
+            { label: 'Quantity', value: `${formatKg(t.qty_low_kg)} – ${formatKg(t.qty_high_kg)}`, numeric: true },
+            { label: 'Expected grade', value: <GradeBadge grade={t.expected_grade} /> },
+            { label: 'Collection date', value: formatDate(t.collection_date) },
+            { label: 'Loading paid by', value: <span className="capitalize">{t.loading_paid_by}</span> },
+            { label: 'Token', value: <MoneyCell amount={t.token_amount} demo />, numeric: true },
+            { label: 'Platform fee', value: `${t.fee_percent}% (buyer, on settlement)` },
+          ]}
+        />
+      </div>
+    </Card>
   );
 }

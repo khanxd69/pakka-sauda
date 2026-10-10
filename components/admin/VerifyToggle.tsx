@@ -21,11 +21,12 @@ export function VerifyToggle({ profileId, verified }: { profileId: string; verif
       type="button"
       role="switch"
       aria-checked={verified}
+      aria-label={verified ? 'Verified: click to unverify' : 'Unverified: click to verify'}
       disabled={busy}
       onClick={toggle}
-      className={`relative h-7 w-12 rounded-full transition ${verified ? 'bg-green-600' : 'bg-stone-300'} disabled:opacity-50`}
+      className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-150 disabled:opacity-50 ${verified ? 'bg-brand' : 'bg-line-strong'}`}
     >
-      <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${verified ? 'left-6' : 'left-1'}`} />
+      <span className={`absolute size-5 rounded-full bg-surface shadow-card transition-all duration-150 ${verified ? 'start-[22px]' : 'start-0.5'}`} />
     </button>
   );
 }

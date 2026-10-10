@@ -1,5 +1,6 @@
 // Pakka Sauda: wholesaler's bids. Owner: Workstream D.
 import { BidsTable } from '@/components/buyer/BidsTable';
+import { PageHeader } from '@/components/design/PageHeader';
 import { AutoRefresh } from '@/components/shared/AutoRefresh';
 import { getMyBids, getSaudasForUser } from '@/lib/queries';
 import { requireUser } from '@/lib/session';
@@ -9,10 +10,10 @@ export default async function MyBidsPage() {
   const [bids, saudas] = await Promise.all([getMyBids(user.id), getSaudasForUser(user)]);
   const saudaByBid = Object.fromEntries(saudas.map((s) => [s.bid_id, s.id]));
   return (
-    <div className="flex flex-col gap-4">
+    <>
       <AutoRefresh />
-      <h1 className="text-2xl font-bold">My bids</h1>
+      <PageHeader title="My bids" description="Every ladder you have placed. Pending bids can be withdrawn until the farmer accepts." />
       <BidsTable bids={bids} saudaByBid={saudaByBid} />
-    </div>
+    </>
   );
 }
