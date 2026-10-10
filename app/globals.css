@@ -2,12 +2,36 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Light mode only: no element ever gets .dark, so dark: utilities never apply. */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* Pakka Sauda design tokens (light mode only). Components use these names, never raw hex. */
+  --color-page: var(--ps-page);
+  --color-surface: var(--ps-surface);
+  --color-subtle: var(--ps-subtle);
+  --color-line: var(--ps-line);
+  --color-line-strong: var(--ps-line-strong);
+  --color-ink: var(--ps-ink);
+  --color-ink-muted: var(--ps-ink-muted);
+  --color-brand: var(--ps-brand);
+  --color-brand-hover: var(--ps-brand-hover);
+  --color-brand-soft: var(--ps-brand-soft);
+  --color-attn: var(--ps-attn);
+  --color-attn-soft: var(--ps-attn-soft);
+  --color-success: var(--ps-success);
+  --color-success-soft: var(--ps-success-soft);
+  --color-danger: var(--ps-danger);
+  --color-danger-soft: var(--ps-danger-soft);
+  --color-warning: var(--ps-warning);
+  --color-warning-soft: var(--ps-warning-soft);
+  --color-info: var(--ps-info);
+  --color-info-soft: var(--ps-info-soft);
+  --shadow-card: 0 1px 2px rgba(16, 24, 20, 0.06);
+  --font-urdu: var(--font-nastaliq);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -49,73 +73,62 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --ps-page: #f8fafb;
+  --ps-surface: #ffffff;
+  --ps-subtle: #f1f5f4;
+  --ps-line: #e4e9e7;
+  --ps-line-strong: #cbd5d1;
+  --ps-ink: #0f1a17;
+  --ps-ink-muted: #5b6b66;
+  --ps-brand: #166534;
+  --ps-brand-hover: #14532d;
+  --ps-brand-soft: #e7f4ec;
+  --ps-attn: #b45309;
+  --ps-attn-soft: #fef3c7;
+  --ps-success: #15803d;
+  --ps-success-soft: #dcfce7;
+  --ps-danger: #b91c1c;
+  --ps-danger-soft: #fee2e2;
+  --ps-warning: #b45309;
+  --ps-warning-soft: #fef3c7;
+  --ps-info: #1d4ed8;
+  --ps-info-soft: #dbeafe;
+
+  /* shadcn tokens mapped onto the Pakka Sauda palette */
+  --background: var(--ps-page);
+  --foreground: var(--ps-ink);
+  --card: var(--ps-surface);
+  --card-foreground: var(--ps-ink);
+  --popover: var(--ps-surface);
+  --popover-foreground: var(--ps-ink);
+  --primary: var(--ps-brand);
+  --primary-foreground: #ffffff;
+  --secondary: var(--ps-subtle);
+  --secondary-foreground: var(--ps-ink);
+  --muted: var(--ps-subtle);
+  --muted-foreground: var(--ps-ink-muted);
+  --accent: var(--ps-subtle);
+  --accent-foreground: var(--ps-ink);
+  --destructive: var(--ps-danger);
+  --border: var(--ps-line);
+  --input: var(--ps-line-strong);
+  --ring: var(--ps-brand);
+  --chart-1: var(--ps-brand);
+  --chart-2: #4d7c5f;
+  --chart-3: #86a893;
+  --chart-4: var(--ps-attn);
+  --chart-5: var(--ps-line-strong);
+  --radius: 0.5rem;
+  --sidebar: var(--ps-surface);
+  --sidebar-foreground: var(--ps-ink);
+  --sidebar-primary: var(--ps-brand);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--ps-subtle);
+  --sidebar-accent-foreground: var(--ps-ink);
+  --sidebar-border: var(--ps-line);
+  --sidebar-ring: var(--ps-brand);
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
 
 @layer base {
   * {
@@ -127,4 +140,44 @@
   html {
     @apply font-sans;
   }
+  body {
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  :focus-visible {
+    outline: 2px solid var(--ps-brand);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Audio pill waveform while a prompt is playing */
+@keyframes ps-wave {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}
+.ps-wave > span {
+  display: inline-block;
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  background: currentColor;
+  animation: ps-wave 900ms ease-in-out infinite;
+  transform-origin: center;
+}
+.ps-wave > span:nth-child(2) { animation-delay: 150ms; }
+.ps-wave > span:nth-child(3) { animation-delay: 300ms; }
+.ps-wave > span:nth-child(4) { animation-delay: 450ms; }
+
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
