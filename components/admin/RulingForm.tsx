@@ -26,6 +26,7 @@ export function RulingForm({ sauda }: { sauda: SaudaView }) {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!grade || !note.trim()) return;
+    if (!window.confirm(`Rule grade ${grade}? ${r?.outcome === 'payable' ? `The farmer will be paid ${formatRs(r.finalAmount)}.` : 'The sauda will be cancelled.'}`)) return;
     setBusy(true);
     const res = await resolveDispute({ saudaId: sauda.id, grade, note: note.trim() });
     setBusy(false);
@@ -53,34 +54,55 @@ export function RulingForm({ sauda }: { sauda: SaudaView }) {
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-4 rounded-2xl border-2 border-stone-300 bg-white p-5">
-      <h2 className="text-lg font-semibold">Ruling</h2>
-      <fieldset className="flex gap-6">
-        <legend className="mb-1 text-sm font-medium">Grade</legend>
-        {GRADES.map((g) => (
-          <label key={g} className="flex items-center gap-2">
-            <input type="radio" name="grade" value={g} checked={grade === g} onChange={() => setGrade(g)} className="h-4 w-4" />
-            {g}
-          </label>
-        ))}
-      </fieldset>
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="note">Note (required)</Label>
-        <Textarea id="note" rows={3} maxLength={1000} required value={note} onChange={(e) => setNote(e.target.value)} placeholder="What the evidence shows" />
+    <form onSubmit={submit} className="flex flex-col rounded-xl border border-line bg-surface shadow-card">
+      <div className="border-b border-line px-5 py-4">
+        <h2 className="text-base font-semibold text-ink">Ruling</h2>
+        <p className="text-[13px] text-ink-muted">Decide the grade from the evidence. The amount is recalculated by rule.</p>
       </div>
-      {r ? (
-        <p className={`rounded-lg p-3 text-sm ${r.outcome === 'payable' ? 'bg-green-50 text-green-900' : 'bg-red-50 text-red-800'}`}>
-          {r.outcome === 'payable'
-            ? `New amount ${formatRs(r.finalAmount)}, was ${was}. Fee ${formatRs(r.fee)}.`
-            : `Grade ${r.grade} was not priced: the sauda is cancelled, the crop stays with the farmer and the token goes back to the buyer.`}
-        </p>
-      ) : null}
-      <Button type="submit" disabled={busy || !grade || !note.trim()} className="h-11 bg-stone-900 text-base text-white">
-        {busy ? 'Saving…' : 'Submit ruling'}
-      </Button>
-      <Button type="button" variant="outline" disabled={busy} onClick={inconclusive}>
-        Evidence inconclusive
-      </Button>
+      <div className="flex flex-col gap-5 px-5 py-4">
+        <fieldset className="grid grid-cols-3 gap-2">
+          <legend className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-muted">Grade</legend>
+          {GRADES.map((g) => (
+            <label
+              key={g}
+              className={`flex cursor-pointer flex-col gap-0.5 rounded-lg border px-3 py-2.5 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand/30 ${
+                grade === g ? 'border-brand bg-brand-soft' : 'border-line-strong hover:bg-subtle'
+              }`}
+            >
+              <input type="radio" name="grade" value={g} checked={grade === g} onChange={() => setGrade(g)} className="sr-only" />
+              <span className={`text-sm font-semibold ${grade === g ? 'text-brand' : 'text-ink'}`}>Grade {g}</span>
+              <span className="text-[11px] tabular-nums text-ink-muted">{sauda.terms.price[g] == null ? 'Not accepted' : `Rs ${sauda.terms.price[g]}/kg`}</span>
+            </label>
+          ))}
+        </fieldset>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="note" className="text-[13px] text-ink-muted">Note (required)</Label>
+          <Textarea id="note" rows={3} maxLength={1000} required value={note} onChange={(e) => setNote(e.target.value)} placeholder="What the evidence shows" />
+        </div>
+        {r ? (
+          r.outcome === 'payable' ? (
+            <div className="flex flex-col gap-1 rounded-lg border border-brand/20 bg-brand-soft px-4 py-3">
+              <span className="text-xs font-medium text-brand">New amount</span>
+              <span className="text-2xl font-semibold tabular-nums text-ink">{formatRs(r.finalAmount)}</span>
+              <span className="text-xs tabular-nums text-ink-muted">
+                Was {was} · fee {formatRs(r.fee)}
+              </span>
+            </div>
+          ) : (
+            <p role="alert" className="rounded-lg border border-danger/20 bg-danger-soft px-3 py-2 text-[13px] text-danger">
+              Grade {r.grade} was not priced: the sauda is cancelled, the crop stays with the farmer and the token goes back to the buyer.
+            </p>
+          )
+        ) : null}
+      </div>
+      <div className="flex flex-col gap-2 border-t border-line px-5 py-4">
+        <Button type="submit" disabled={busy || !grade || !note.trim()} className="h-10 text-sm">
+          {busy ? 'Saving…' : 'Submit ruling'}
+        </Button>
+        <Button type="button" variant="outline" disabled={busy} onClick={inconclusive} className="h-10 text-sm">
+          Evidence inconclusive
+        </Button>
+      </div>
     </form>
   );
 }
