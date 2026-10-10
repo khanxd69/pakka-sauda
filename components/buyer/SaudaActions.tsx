@@ -4,12 +4,12 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { payToken } from '@/app/actions/saudas';
+import { cancelSauda, payToken } from '@/app/actions/saudas';
 import { DemoBadge } from '@/components/shared/DemoBadge';
 import { Button } from '@/components/ui/button';
 import { formatKg, formatRs } from '@/lib/format';
-import { settle } from '@/lib/settle';
-import type { SaudaView } from '@/lib/types';
+import { isShortfall, settle } from '@/lib/settle';
+import type { CancelReason, SaudaView } from '@/lib/types';
 import { CollectionForm } from './CollectionForm';
 import { errorText } from './errors';
 import { CANCEL_TEXT } from './nextAction';
@@ -72,6 +72,26 @@ export function SaudaActions({ sauda }: { sauda: SaudaView }) {
     router.refresh();
   }
 
+  async function cancel(reason: CancelReason, confirmText: string) {
+    if (!window.confirm(confirmText)) return;
+    setBusy(true);
+    const res = await cancelSauda({ saudaId: sauda.id, reason });
+    setBusy(false);
+    if (res.ok) toast.success('Sauda cancelled');
+    else toast.error(errorText(res.error));
+    router.refresh();
+  }
+  const walkAway = (
+    <Button
+      variant="outline"
+      disabled={busy}
+      onClick={() => cancel('buyer_walked_away', 'Walk away from this deal? Your token goes to the farmer.')}
+      className="border-red-300 text-red-700"
+    >
+      Walk away
+    </Button>
+  );
+
   const grade = sauda.resolved_grade ?? sauda.delivered_grade;
   const r = sauda.weighed_kg != null && grade ? settle(sauda.terms, sauda.weighed_kg, grade) : null;
 
@@ -86,14 +106,29 @@ export function SaudaActions({ sauda }: { sauda: SaudaView }) {
           <Button onClick={pay} disabled={busy} className="h-11 bg-green-700 text-base text-white hover:bg-green-800">
             {busy ? 'Paying…' : 'Pay token (DEMO)'}
           </Button>
+          {walkAway}
         </Panel>
       );
     case 'awaiting_collection':
-      return <CollectionForm sauda={sauda} />;
+      return (
+        <div className="flex flex-col gap-3">
+          <CollectionForm sauda={sauda} />
+          {walkAway}
+        </div>
+      );
     case 'collected':
       return (
         <Panel title="Waiting for the farmer to confirm.">
           <Recorded sauda={sauda} />
+          {sauda.weighed_kg != null && isShortfall(sauda.terms, sauda.weighed_kg) ? (
+            <Button
+              variant="outline"
+              disabled={busy}
+              onClick={() => cancel('shortfall', 'Cancel for shortfall? The weight is below 80% of the low estimate; your token is returned.')}
+            >
+              Cancel: shortfall
+            </Button>
+          ) : null}
         </Panel>
       );
     case 'disputed':
