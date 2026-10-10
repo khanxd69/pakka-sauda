@@ -12,7 +12,7 @@ function Count({ n, pulse }: { n: number; pulse?: boolean }) {
   );
 }
 
-export function HomeTiles({ offers, saudas }: { offers: number; saudas: number }) {
+export function HomeTiles({ offers, saudas, needsAction = false }: { offers: number; saudas: number; needsAction?: boolean }) {
   const tile = 'flex min-h-28 w-full items-center justify-between gap-4 rounded-3xl px-6 text-3xl font-bold shadow-md active:scale-[0.98]';
   return (
     <nav className="flex flex-col gap-4">
@@ -26,7 +26,7 @@ export function HomeTiles({ offers, saudas }: { offers: number; saudas: number }
       </Link>
       <Link href="/f/saudas" className={`${tile} bg-sky-700 text-white`}>
         <span>میرے سودے</span>
-        <Count n={saudas} />
+        <Count n={saudas} pulse={needsAction} />
       </Link>
     </nav>
   );
