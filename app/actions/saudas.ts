@@ -1,14 +1,31 @@
 'use server';
-// Pakka Sauda: sauda lifecycle actions. Owner: Workstream A. PHASE 0 STUB. Signatures FROZEN (contracts-v1).
-// Real implementations: steps A1.6 (payToken) and A2.2-A2.6. All go through lib/transition.ts.
+// Pakka Sauda: sauda lifecycle actions. Owner: Workstream A. Signatures FROZEN (contracts-v1).
+// payToken is real (A1.6); the rest are stubs until A2.2-A2.6. All status changes go through lib/transition.ts.
+import { revalidatePath } from 'next/cache';
+import { newCollectionCode } from '@/lib/rules';
+import { IdSchema, type CancelSaudaInput, type FarmerDisputeInput, type RecordCollectionInput } from '@/lib/schemas';
+import { requireUser } from '@/lib/session';
+import { applyTransition } from '@/lib/transition';
 import type { ActionResult, SaudaStatus } from '@/lib/types';
-import type { CancelSaudaInput, FarmerDisputeInput, RecordCollectionInput } from '@/lib/schemas';
-import { notImplemented } from './_result';
+import { notImplemented, run } from './_result';
 
 /** Buyer pays the token (DEMO: no money moves). token_due -> awaiting_collection; issues collection_code. */
 export async function payToken(saudaId: string): Promise<ActionResult> {
-  void saudaId;
-  return notImplemented();
+  return run(async () => {
+    const user = await requireUser('wholesaler');
+    const id = IdSchema.parse(saudaId);
+    // Token expiry check (TOKEN_EXPIRED) comes in A3.1.
+    await applyTransition({
+      saudaId: id,
+      action: 'payToken',
+      actor: user,
+      to: 'awaiting_collection',
+      patch: { token_paid_at: new Date().toISOString(), collection_code: newCollectionCode() },
+      event: 'token_paid',
+    });
+    revalidatePath('/', 'layout');
+    return null;
+  });
 }
 
 /** Buyer records weighed kg + grade (+ note). Stores settle() result. awaiting_collection -> collected. */
