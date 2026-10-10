@@ -2,6 +2,7 @@
 // Pakka Sauda: number entry for farmers: giant digits + number pad + mic. Owner: Workstream C. Props FROZEN.
 // The mic transcript goes to /api/voice/extract; the value is converted to the displayed unit and passed to onChange
 // with the transcript. The farmer always confirms it on the read-back screen (F7).
+import { LoaderCircle, Mic } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { clipUrl } from '@/lib/voice/clips';
 import { NumberPad, type PadKey } from './NumberPad';
@@ -70,28 +71,28 @@ export function VoiceNumberInput({ field, unit, onUnitChange, value, onChange }:
   const unitWord = unit === 'kg' ? 'کلو' : 'من';
 
   return (
-    <div className="mx-auto flex w-full max-w-sm flex-col gap-3">
-      <div className="text-center">
-        <div dir="ltr" className="min-h-20 text-6xl font-bold tabular-nums text-stone-900">
-          {value == null ? <span className="text-stone-300">0</span> : value.toLocaleString('en-IN')}
-        </div>
-        <div className="text-2xl text-stone-600">{field === 'price' ? `روپے / ${unitWord}` : unitWord}</div>
+    <div className="mx-auto flex w-full max-w-sm flex-col gap-4">
+      <div className="flex items-baseline justify-center gap-3 rounded-2xl border border-line bg-surface px-4 py-5 shadow-card">
+        <span dir="ltr" className="min-w-[1ch] text-6xl font-semibold tabular-nums tracking-tight text-ink">
+          {value == null ? <span className="text-line-strong">0</span> : value.toLocaleString('en-IN')}
+        </span>
+        <span className="text-xl text-ink-muted">{field === 'price' ? `روپے / ${unitWord}` : unitWord}</span>
       </div>
 
       {onUnitChange ? (
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-1 rounded-xl border border-line bg-subtle p-1">
           {(['mann', 'kg'] as const).map((u) => (
             <button
               key={u}
               type="button"
               onClick={() => onUnitChange(u)}
               aria-pressed={unit === u}
-              className={`flex h-14 items-center justify-center gap-2 rounded-2xl border-2 text-2xl ${
-                unit === u ? 'border-green-700 bg-green-50 font-bold' : 'border-stone-300 bg-white'
+              className={`flex h-14 items-center justify-center gap-2 rounded-lg text-xl transition-colors duration-150 ${
+                unit === u ? 'bg-surface font-semibold text-brand shadow-card ring-1 ring-brand/20' : 'text-ink-muted'
               }`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={u === 'kg' ? '/img/kg.svg' : '/img/mann.svg'} alt="" className="h-9 w-9" />
+              <img src={u === 'kg' ? '/img/kg.svg' : '/img/mann.svg'} alt="" className="size-8" />
               {u === 'kg' ? 'کلو' : 'من'}
             </button>
           ))}
@@ -106,15 +107,11 @@ export function VoiceNumberInput({ field, unit, onUnitChange, value, onChange }:
           onClick={() => (mic.state === 'listening' ? mic.stop() : void mic.start())}
           disabled={thinking}
           aria-label="مائیک / Microphone"
-          className={`mx-auto flex h-20 w-20 items-center justify-center rounded-full text-4xl text-white shadow-lg ${
-            mic.state === 'listening' ? 'animate-pulse bg-red-600' : thinking ? 'bg-stone-400' : 'bg-green-700'
+          className={`mx-auto flex size-20 items-center justify-center rounded-full text-white shadow-card transition-colors duration-150 ${
+            mic.state === 'listening' ? 'animate-pulse bg-danger' : thinking ? 'bg-line-strong' : 'bg-brand'
           }`}
         >
-          {thinking ? (
-            <span className="h-9 w-9 animate-spin rounded-full border-4 border-white/40 border-t-white" aria-hidden />
-          ) : (
-            '🎤'
-          )}
+          {thinking ? <LoaderCircle className="size-8 animate-spin" strokeWidth={1.75} aria-hidden /> : <Mic className="size-8" strokeWidth={1.75} aria-hidden />}
         </button>
       ) : null}
     </div>

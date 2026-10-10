@@ -1,9 +1,9 @@
-// Pakka Sauda: wizard progress dots. Owner: Workstream B.
+// Pakka Sauda: slim segmented progress bar for the sell wizard (F2-F7). Owner: Workstream B.
 export function StepDots({ total, current }: { total: number; current: number }) {
   return (
-    <div className="flex justify-center gap-2 py-3" aria-label={`${current + 1} / ${total}`}>
+    <div className="flex w-full gap-1.5" role="progressbar" aria-valuemin={1} aria-valuemax={total} aria-valuenow={current + 1}>
       {Array.from({ length: total }, (_, i) => (
-        <span key={i} className={`h-3 w-3 rounded-full ${i === current ? 'bg-[#15803d]' : i < current ? 'bg-green-300' : 'bg-stone-300'}`} />
+        <span key={i} className={`h-1.5 flex-1 rounded-full transition-colors duration-150 ${i <= current ? 'bg-brand' : 'bg-line'}`} />
       ))}
     </div>
   );

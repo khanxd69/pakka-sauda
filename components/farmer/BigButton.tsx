@@ -1,12 +1,13 @@
 'use client';
 // Pakka Sauda: the farmer's only kind of button: full width, at least 56 px. Owner: Workstream B.
-// go = green (yes / continue), stop = red (no / dispute), plain = neutral. Shows a spinner when busy.
+// go = solid green (yes / continue), stop = outlined red (no / dispute), plain = outlined neutral. Spinner when busy.
+import { LoaderCircle } from 'lucide-react';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
 const VARIANT = {
-  go: 'bg-[#15803d] text-white',
-  stop: 'bg-[#b91c1c] text-white',
-  plain: 'bg-white text-stone-800 border-2 border-stone-300',
+  go: 'bg-brand text-white shadow-card hover:bg-brand-hover',
+  stop: 'border-2 border-danger/40 bg-surface text-danger hover:bg-danger-soft',
+  plain: 'border border-line-strong bg-surface text-ink hover:bg-subtle',
 } as const;
 
 export function BigButton({
@@ -24,16 +25,25 @@ export function BigButton({
       {...rest}
       disabled={disabled || busy}
       aria-busy={busy}
-      className={`flex min-h-16 w-full items-center justify-center gap-3 rounded-2xl px-4 text-2xl font-bold shadow-sm transition active:scale-[0.98] disabled:opacity-50 ${VARIANT[variant]} ${className ?? ''}`}
+      className={`flex min-h-14 w-full items-center justify-center gap-3 rounded-xl px-4 text-xl font-semibold transition-colors duration-150 active:scale-[0.99] disabled:opacity-45 [&_svg]:size-6 ${VARIANT[variant]} ${className ?? ''}`}
     >
       {busy ? (
-        <span className="h-8 w-8 animate-spin rounded-full border-4 border-current/30 border-t-current" aria-hidden />
+        <LoaderCircle className="animate-spin" strokeWidth={2} aria-hidden />
       ) : (
         <>
-          {icon ? <span className="text-3xl leading-none">{icon}</span> : null}
+          {icon}
           {children}
         </>
       )}
     </button>
+  );
+}
+
+/** Bottom action bar, pinned above the safe area, for the screen's (at most two) primary actions. */
+export function ActionBar({ children }: { children: ReactNode }) {
+  return (
+    <div className="pb-safe sticky bottom-0 z-10 -mx-4 mt-6 flex flex-col gap-3 border-t border-line bg-page/95 px-4 pt-4 backdrop-blur">
+      {children}
+    </div>
   );
 }

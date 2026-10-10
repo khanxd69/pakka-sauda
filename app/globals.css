@@ -27,6 +27,9 @@
   --color-warning-soft: var(--ps-warning-soft);
   --color-info: var(--ps-info);
   --color-info-soft: var(--ps-info-soft);
+  --color-earth: var(--ps-earth);
+  --color-earth-dark: var(--ps-earth-dark);
+  --color-earth-soft: var(--ps-earth-soft);
   --shadow-card: 0 1px 2px rgba(16, 24, 20, 0.06);
   --font-urdu: var(--font-nastaliq);
   --color-background: var(--background);
@@ -93,6 +96,9 @@
   --ps-warning-soft: #fef3c7;
   --ps-info: #1d4ed8;
   --ps-info-soft: #dbeafe;
+  --ps-earth: #c9a57c;
+  --ps-earth-dark: #8a6a48;
+  --ps-earth-soft: #f4ece2;
 
   /* shadcn tokens mapped onto the Pakka Sauda palette */
   --background: var(--ps-page);
@@ -177,6 +183,12 @@
 .ps-wave > span:nth-child(2) { animation-delay: 150ms; }
 .ps-wave > span:nth-child(3) { animation-delay: 300ms; }
 .ps-wave > span:nth-child(4) { animation-delay: 450ms; }
+
+/* Farmer screens: Urdu in Nastaliq, but every left-to-right number span uses the Latin UI font. */
+[lang='ur'] [dir='ltr'] {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  line-height: 1.2;
+}
 
 .pb-safe {
   padding-bottom: max(1rem, env(safe-area-inset-bottom));

@@ -1,6 +1,7 @@
 'use client';
 // Pakka Sauda: F2-F7 sell wizard. One question per screen, audio first, read-back before publishing. Owner: B.
 // All answers live in one state object; nothing is submitted before the F7 read-back.
+import { ArrowRight, Apple, Carrot, Check, Cherry, CircleCheck, House, Pencil, Wheat } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { createListing } from '@/app/actions/listings';
@@ -11,11 +12,13 @@ import { useOnline } from '@/components/voice/useOnline';
 import { VoiceNumberInput } from '@/components/voice/VoiceNumberInput';
 import { estimateToRange, mannToKg, perMannToPerKg } from '@/lib/format';
 import type { Grade, ReferencePrice } from '@/lib/types';
-import { clipUrl, type ClipId } from '@/lib/voice/clips';
+import { CLIPS, clipUrl, type ClipId } from '@/lib/voice/clips';
 import { readBackListing, type ReadyWhen } from '@/lib/voice/phrases';
-import { BigButton } from './BigButton';
+import { ActionBar, BigButton } from './BigButton';
 import { GradeCard } from './GradeCard';
 import { ListingSummary } from './ListingSummary';
+import { PotatoArt } from './PotatoArt';
+import { PromptHeading } from './PromptHeading';
 import { ReadyTiles } from './ReadyTiles';
 import { RefPriceCard } from './RefPriceCard';
 import { StepDots } from './StepDots';
@@ -50,6 +53,7 @@ function isoPlus(days: number): string {
 const READY_DAYS: Record<ReadyWhen, [number, number]> = { this_week: [0, 6], next_week: [7, 13], two_weeks: [14, 20] };
 
 const GRADES: Grade[] = ['A', 'B', 'C'];
+const OTHER_CROPS = [Wheat, Carrot, Apple, Cherry]; // coming soon: shown greyed out
 const DRAFT_KEY = 'ps_sell_draft';
 const EMPTY: SellState = { qtyValue: null, unit: 'mann', ready: null, expectedGrade: null, minPricePerMann: null, transcripts: [] };
 
@@ -123,37 +127,46 @@ export function SellWizard({ referencePrices }: { referencePrices: ReferencePric
 
   if (step === 'done') {
     return (
-      <div className="flex flex-col items-center gap-6 pt-10 text-center">
-        <AudioPrompt clip="listing_published" autoPlay />
-        <span className="text-8xl">✅</span>
-        <Link href="/f" className="flex min-h-16 w-full items-center justify-center gap-3 rounded-2xl bg-[#15803d] text-3xl font-bold text-white">
-          🏠
+      <div className="flex flex-col items-center gap-6 pt-12 text-center">
+        <span className="flex size-24 items-center justify-center rounded-full bg-success-soft text-success">
+          <CircleCheck className="size-14" strokeWidth={1.5} aria-hidden />
+        </span>
+        <PromptHeading clip="listing_published" autoPlay />
+        <Link
+          href="/f"
+          className="flex min-h-14 w-full items-center justify-center gap-3 rounded-xl bg-brand text-xl font-semibold text-white shadow-card transition-colors hover:bg-brand-hover"
+          aria-label="گھر / Home"
+        >
+          <House className="size-6" strokeWidth={1.5} aria-hidden />
         </Link>
       </div>
     );
   }
 
+  const readBack = step === 'review' && s.ready && s.minPricePerMann ? readBackListing({ estimateKg, ready: s.ready, minPricePerMann: s.minPricePerMann }) : null;
+
   return (
     <div className="flex min-h-[calc(100dvh-4rem)] flex-col">
-      <div className="flex items-center justify-between py-3">
+      <div className="sticky top-16 z-10 -mx-4 bg-page/95 px-4 pt-4 pb-3 backdrop-blur">
         <StepDots total={STEPS.length} current={idx} />
-        {step === 'review' ? null : <AudioPrompt key={step} clip={CLIP[step]} autoPlay />}
       </div>
 
-      <div className="flex-1">
+      <div className="flex flex-1 flex-col gap-5 pt-2">
+        {step === 'review' ? null : <PromptHeading key={step} clip={CLIP[step]} autoPlay />}
+
         {step === 'crop' ? (
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={next}
-              className="col-span-2 flex min-h-40 items-center justify-center rounded-3xl border-4 border-[#15803d] bg-green-50 text-8xl active:scale-[0.98]"
+              className="col-span-2 flex min-h-40 items-center justify-center gap-4 rounded-2xl border border-brand bg-surface p-4 shadow-card ring-2 ring-brand/20 transition-transform active:scale-[0.99]"
               aria-label="آلو / Potato"
             >
-              🥔
+              <PotatoArt kind="crop" className="size-32 rounded-2xl" />
             </button>
-            {['🧅', '🌾', '🍅', '🥕'].map((e) => (
-              <div key={e} className="flex min-h-24 items-center justify-center rounded-3xl border-2 border-stone-200 bg-stone-100 text-5xl opacity-40 grayscale" aria-hidden>
-                {e}
+            {OTHER_CROPS.map((Icon, i) => (
+              <div key={i} className="flex min-h-24 items-center justify-center rounded-2xl border border-dashed border-line-strong bg-subtle text-line-strong" aria-hidden>
+                <Icon className="size-10" strokeWidth={1.25} />
               </div>
             ))}
           </div>
@@ -201,11 +214,12 @@ export function SellWizard({ referencePrices }: { referencePrices: ReferencePric
 
         {step === 'price' ? (
           <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-2">
-              <div className="flex-1">
-                <RefPriceCard refPrice={lahore} />
+            <div className="flex flex-col gap-2">
+              <RefPriceCard refPrice={lahore} />
+              <div className="flex items-center gap-3 px-1">
+                <p className="flex-1 text-base leading-[1.9] text-ink-muted">{CLIPS.price_reference.ur}</p>
+                <AudioPrompt clip="price_reference" autoPlay />
               </div>
-              <AudioPrompt clip="price_reference" autoPlay />
             </div>
             <VoiceNumberInput
               field="price"
@@ -216,42 +230,47 @@ export function SellWizard({ referencePrices }: { referencePrices: ReferencePric
           </div>
         ) : null}
 
-        {step === 'review' && s.ready && s.expectedGrade && s.minPricePerMann ? (
+        {step === 'review' && readBack && s.ready && s.expectedGrade && s.minPricePerMann ? (
           <div className="flex flex-col gap-4">
-            <div className="flex justify-center gap-4">
-              <SpeakButton autoPlay text={readBackListing({ estimateKg, ready: s.ready, minPricePerMann: s.minPricePerMann })} />
-              <AudioPrompt clip="confirm_hint" autoPlay />
+            <div className="flex items-start gap-3 rounded-2xl border border-attn/30 bg-attn-soft p-4">
+              <p className="flex-1 text-xl font-semibold leading-[2] text-ink">{readBack}</p>
+              <SpeakButton autoPlay text={readBack} />
             </div>
             <ListingSummary estimateKg={estimateKg} ready={s.ready} expectedGrade={s.expectedGrade} minPricePerMann={s.minPricePerMann} />
+            <PromptHeading clip="confirm_hint" autoPlay size="md" />
           </div>
         ) : null}
       </div>
 
-      <div className="sticky bottom-0 flex flex-col gap-3 bg-stone-50 py-4">
+      <ActionBar>
         {step === 'review' ? (
           <>
-            <BigButton variant="go" icon="✓" busy={busy} disabled={!online} onClick={publish}>
+            <BigButton variant="go" icon={<Check strokeWidth={2.5} aria-hidden />} busy={busy} disabled={!online} onClick={publish}>
               ٹھیک ہے
             </BigButton>
-            <BigButton variant="plain" icon="✎" disabled={busy} onClick={() => go('qty')}>
+            <BigButton variant="plain" icon={<Pencil strokeWidth={1.75} aria-hidden />} disabled={busy} onClick={() => go('qty')}>
               بدلیں
             </BigButton>
           </>
         ) : (
-          <>
+          <div className="flex gap-3">
             {step !== 'crop' ? (
-              <BigButton variant="go" icon="✓" disabled={!canNext} onClick={next} aria-label="آگے / Next" />
-            ) : null}
-            {step !== 'crop' ? (
-              <BigButton variant="plain" icon="→" onClick={back} aria-label="واپس / Back" />
+              <BigButton variant="plain" className="!w-20 shrink-0" onClick={back} aria-label="واپس / Back" icon={<ArrowRight strokeWidth={1.75} aria-hidden />} />
             ) : (
-              <Link href="/f" className="flex min-h-16 w-full items-center justify-center rounded-2xl border-2 border-stone-300 bg-white text-3xl" aria-label="واپس / Back">
-                →
+              <Link
+                href="/f"
+                className="flex min-h-14 w-20 shrink-0 items-center justify-center rounded-xl border border-line-strong bg-surface text-ink"
+                aria-label="واپس / Back"
+              >
+                <ArrowRight className="size-6" strokeWidth={1.75} aria-hidden />
               </Link>
             )}
-          </>
+            {step !== 'crop' ? (
+              <BigButton variant="go" disabled={!canNext} onClick={next} aria-label="آگے / Next" icon={<Check strokeWidth={2.5} aria-hidden />} />
+            ) : null}
+          </div>
         )}
-      </div>
+      </ActionBar>
     </div>
   );
 }
