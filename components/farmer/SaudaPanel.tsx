@@ -4,6 +4,7 @@ import { DemoBadge } from '@/components/shared/DemoBadge';
 import { AudioPrompt } from '@/components/voice/AudioPrompt';
 import type { SaudaView } from '@/lib/types';
 import { BalancePanel } from './BalancePanel';
+import { CodeBox } from './CodeBox';
 import { CollectionReview } from './CollectionReview';
 import { GradeCard } from './GradeCard';
 import { CancelledPanel, SettledPanel } from './SettledPanel';
@@ -27,6 +28,7 @@ export function SaudaPanel({ sauda }: { sauda: SaudaView }) {
           <AudioPrompt clip="token_received" autoPlay />
           <span className="rounded-full bg-[#15803d] px-5 py-2 text-2xl font-bold text-white">✓ ٹوکن</span>
           <DemoBadge />
+          {sauda.collection_code ? <CodeBox code={sauda.collection_code} /> : null}
         </div>
       );
     case 'collected':
