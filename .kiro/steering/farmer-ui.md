@@ -13,7 +13,7 @@ The farmer may not be able to read. He uses a cheap Android phone outdoors on a 
     - red ✗ or ✎ = no / change.
 
     Put them at the bottom, full width, at least 56 px tall.
-4. **Pictures over words:** crop photo, grade photos (A/B/C), calendar tiles (this week / next week / two weeks). Text is a secondary label in Urdu.
+4. **Pictures and readable words:** crop photo or flat illustration, grade photos or illustrations (A/B/C), calendar tiles (this week / next week / two weeks). Every screen also shows its question as readable Urdu text next to the audio button (the clip's own sentence from `clips.json`), so farmers who read are not slowed down and those who don't still hear it. No emoji tiles; use lucide icons and the flat illustrations in `components/farmer/PotatoArt.tsx`.
 5. **Numbers:** show them huge (text-5xl or more). Show quantity in kg *and* mann. Show prices per mann (Rs 1,800 / من) with per kg underneath. Use `formatRsPK` (South Asian grouping, e.g. 3,58,800).
 6. **RTL:** `app/f/layout.tsx` sets `dir="rtl" lang="ur"` and the Noto Nastaliq Urdu font, with line-height 1.9 or more for Nastaliq. Numbers stay left-to-right (`dir="ltr"` on number spans).
 7. **Confirm before commit.** Anything that creates or changes a deal goes through a read-back screen first (F7, accept, F10, F11).
@@ -23,6 +23,6 @@ The farmer may not be able to read. He uses a cheap Android phone outdoors on a 
     - on error, play `error_generic` and keep the entered data.
 
     P1: save the listing draft to `localStorage`.
-10. **Colours:** green #15803d = go, red #b91c1c = stop/dispute, amber background for audio buttons. Contrast must meet WCAG AA.
+10. **Colours:** use the design tokens in `app/globals.css` only (no hex in components). Calm off-white page, white cards with 1 px borders, no saturated full-bleed blocks. Primary = solid deep green (`bg-brand`); secondary = outlined; stop/dispute = outlined red (`danger`); audio = a soft amber pill (`attn-soft`) with a waveform while playing. Contrast must meet WCAG AA.
 11. **Layout:** 360 px width first. No horizontal scroll. No hover-only interactions.
 12. Use the **Urdu strings** from `lib/voice/clips.json` (fixed) and `lib/voice/phrases.ts` (dynamic). Don't invent new Urdu text in components. If you need a new phrase, request it from C.
