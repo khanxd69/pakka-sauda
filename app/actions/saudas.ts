@@ -21,7 +21,13 @@ export async function payToken(saudaId: string): Promise<ActionResult> {
   return run(async () => {
     const user = await requireUser('wholesaler');
     const id = IdSchema.parse(saudaId);
-    // Token expiry check (TOKEN_EXPIRED) comes in A3.1.
+    const s = await loadSauda(id);
+    if (s.status === 'token_due' && new Date(s.token_due_by) < new Date()) {
+      // Window passed: the system cancels (listing reopens) and the buyer is told why.
+      await applyCancel({ saudaId: id, reason: 'token_expired', actor: null });
+      revalidatePath('/', 'layout');
+      throw new Error('TOKEN_EXPIRED');
+    }
     await applyTransition({
       saudaId: id,
       action: 'payToken',
