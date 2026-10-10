@@ -3,7 +3,9 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { uploadEvidence } from '@/app/actions/evidence';
 import { recordCollection } from '@/app/actions/saudas';
+import { CameraCapture } from '@/components/media/CameraCapture';
 import { DemoBadge } from '@/components/shared/DemoBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,14 +24,32 @@ export function CollectionForm({ sauda }: { sauda: SaudaView }) {
   const [grade, setGrade] = useState<Grade | null>(null);
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
+  const [photo, setPhoto] = useState<{ file: File; coords: { lat: number; lng: number } | null } | null>(null);
+  const [skipPhoto, setSkipPhoto] = useState(false);
   const weighedKg = Number(kg);
-  const valid = kg.trim() !== '' && weighedKg > 0 && grade != null;
-  const r = valid ? settle(sauda.terms, weighedKg, grade) : null;
+  const valid = kg.trim() !== '' && weighedKg > 0 && grade != null && (photo != null || skipPhoto);
+  const r = kg.trim() !== '' && weighedKg > 0 && grade != null ? settle(sauda.terms, weighedKg, grade) : null;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!valid || !grade) return;
     setBusy(true);
+    if (photo) {
+      const form = new FormData();
+      form.set('saudaId', sauda.id);
+      form.set('kind', 'collection');
+      form.set('file', photo.file);
+      if (photo.coords) {
+        form.set('lat', String(photo.coords.lat));
+        form.set('lng', String(photo.coords.lng));
+      }
+      const up = await uploadEvidence(form);
+      if (!up.ok) {
+        setBusy(false);
+        toast.error(`Photo upload failed: ${errorText(up.error)}`);
+        return;
+      }
+    }
     const res = await recordCollection({ saudaId: sauda.id, weighedKg, grade, note: note.trim() || undefined });
     setBusy(false);
     if (res.ok) toast.success('Collection recorded');
@@ -92,7 +112,23 @@ export function CollectionForm({ sauda }: { sauda: SaudaView }) {
           returned.
         </p>
       ) : null}
-      {valid && isShortfall(sauda.terms, weighedKg) ? (
+      <div className="flex flex-col gap-2">
+        <Label>Evidence photo</Label>
+        <CameraCapture
+          hint={`Photo must show the farmer's code ${sauda.collection_code ?? ''} on his phone and 3 opened sample bags`}
+          onCapture={(file, coords) => setPhoto({ file, coords })}
+        />
+        {photo ? (
+          <p className="text-xs text-stone-600">Photo ready{photo.coords ? ' with location' : ' (no location)'}.</p>
+        ) : (
+          <label className="flex items-center gap-2 text-sm text-amber-800">
+            <input type="checkbox" checked={skipPhoto} onChange={(e) => setSkipPhoto(e.target.checked)} className="h-4 w-4" />
+            Skip photo (demo only): the reviewer will have no evidence from you.
+          </label>
+        )}
+      </div>
+
+      {r && isShortfall(sauda.terms, weighedKg) ? (
         <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">Below 80% of the low estimate: you may cancel after recording.</p>
       ) : null}
 

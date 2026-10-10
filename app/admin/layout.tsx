@@ -17,6 +17,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/admin" className="text-sm text-stone-700 hover:underline">
             Dashboard
           </Link>
+          <Link href="/admin/users" className="text-sm text-stone-700 hover:underline">
+            Wholesalers
+          </Link>
           <form action={signOut} className="ml-auto">
             <button type="submit" className="text-sm text-stone-500 underline hover:text-stone-900">
               Switch user

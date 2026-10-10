@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { resolveDispute } from '@/app/actions/admin';
+import { cancelSauda } from '@/app/actions/saudas';
 import { errorText } from '@/components/buyer/errors';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -37,6 +38,20 @@ export function RulingForm({ sauda }: { sauda: SaudaView }) {
     }
   }
 
+  async function inconclusive() {
+    if (!window.confirm('Evidence inconclusive? The sauda is cancelled, the crop stays with the farmer and the token goes back to the buyer.')) return;
+    setBusy(true);
+    const res = await cancelSauda({ saudaId: sauda.id, reason: 'dispute_unresolved' });
+    setBusy(false);
+    if (res.ok) {
+      toast.success('Cancelled: dispute unresolved');
+      router.push('/admin');
+    } else {
+      toast.error(errorText(res.error));
+      router.refresh();
+    }
+  }
+
   return (
     <form onSubmit={submit} className="flex flex-col gap-4 rounded-2xl border-2 border-stone-300 bg-white p-5">
       <h2 className="text-lg font-semibold">Ruling</h2>
@@ -62,6 +77,9 @@ export function RulingForm({ sauda }: { sauda: SaudaView }) {
       ) : null}
       <Button type="submit" disabled={busy || !grade || !note.trim()} className="h-11 bg-stone-900 text-base text-white">
         {busy ? 'Saving…' : 'Submit ruling'}
+      </Button>
+      <Button type="button" variant="outline" disabled={busy} onClick={inconclusive}>
+        Evidence inconclusive
       </Button>
     </form>
   );

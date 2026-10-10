@@ -21,10 +21,22 @@ function Photos({ items }: { items: Evidence[] }) {
   );
 }
 
+/** Great-circle distance in km (haversine). */
+function km(a: Evidence, b: Evidence): number {
+  const rad = (d: number) => (d * Math.PI) / 180;
+  const dLat = rad(b.lat! - a.lat!);
+  const dLng = rad(b.lng! - a.lng!);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat!)) * Math.cos(rad(b.lat!)) * Math.sin(dLng / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(h));
+}
+
 export function EvidenceCompare({ sauda, evidence }: { sauda: SaudaView; evidence: Evidence[] }) {
   const t = sauda.terms;
   const buyerPhotos = evidence.filter((e) => e.uploaded_by === sauda.wholesaler_id);
   const farmerPhotos = evidence.filter((e) => e.uploaded_by === sauda.farmer_id);
+  const bLoc = buyerPhotos.find((e) => e.lat != null && e.lng != null);
+  const fLoc = farmerPhotos.find((e) => e.lat != null && e.lng != null);
+  const distance = bLoc && fLoc ? km(bLoc, fLoc) : null;
   return (
     <div className="flex flex-col gap-4">
       <section className="grid gap-2 rounded-2xl border bg-white p-5 text-sm sm:grid-cols-4">
@@ -46,7 +58,11 @@ export function EvidenceCompare({ sauda, evidence }: { sauda: SaudaView; evidenc
           <div className="text-stone-500">Collection code</div>
           <div className="font-mono font-semibold">{sauda.collection_code ?? '–'}</div>
         </div>
-        <div className="sm:col-span-4 text-stone-500">Collection date {formatDate(t.collection_date)}</div>
+        <div className="sm:col-span-4 text-stone-500">
+          Collection date {formatDate(t.collection_date)}
+          {distance != null ? ` · buyer and farmer photos taken ${distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`} apart` : ''}
+          {sauda.collection_code ? ` · check that code ${sauda.collection_code} is visible in the buyer's photo` : ''}
+        </div>
       </section>
       <div className="grid gap-4 md:grid-cols-2">
         <section className="flex flex-col gap-2 rounded-2xl border-2 border-sky-200 bg-white p-5">
