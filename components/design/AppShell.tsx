@@ -47,7 +47,7 @@ export function AppShell({
         </nav>
         <div className="mt-auto flex flex-col gap-3 border-t border-line p-4">
           {sidebarFooter}
-          <DemoBadge text="Demo environment: simulated payments" />
+          <DemoBadge text="DEMO: simulated payments" />
         </div>
       </aside>
 
