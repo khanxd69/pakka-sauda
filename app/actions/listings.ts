@@ -2,10 +2,10 @@
 // Pakka Sauda: listing actions. Owner: Workstream A. Signatures FROZEN (contracts-v1).
 import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/db';
-import { CreateListingSchema, type CreateListingInput } from '@/lib/schemas';
+import { CreateListingSchema, IdSchema, type CreateListingInput } from '@/lib/schemas';
 import { requireUser } from '@/lib/session';
 import type { ActionResult } from '@/lib/types';
-import { notImplemented, run } from './_result';
+import { run } from './_result';
 
 /** Farmer creates a listing. crop = 'potato', district = the farmer's district. Returns the new listing id. */
 export async function createListing(input: CreateListingInput): Promise<ActionResult<{ id: string }>> {
@@ -36,6 +36,18 @@ export async function createListing(input: CreateListingInput): Promise<ActionRe
 
 /** Farmer withdraws an open listing (P1). Pending bids become 'rejected'. */
 export async function cancelListing(listingId: string): Promise<ActionResult> {
-  void listingId;
-  return notImplemented();
+  return run(async () => {
+    const user = await requireUser('farmer');
+    const id = IdSchema.parse(listingId);
+    const { data: l, error: le } = await db().from('listings').select('farmer_id, status').eq('id', id).maybeSingle();
+    if (le) throw new Error(`DB_ERROR:${le.message}`);
+    if (!l || l.farmer_id !== user.id) throw new Error('NOT_YOUR_LISTING');
+    const { data, error } = await db().from('listings').update({ status: 'cancelled' }).eq('id', id).eq('status', 'open').select('id');
+    if (error) throw new Error(`DB_ERROR:${error.message}`);
+    if (!data || data.length === 0) throw new Error('LISTING_NOT_OPEN');
+    const { error: be } = await db().from('bids').update({ status: 'rejected' }).eq('listing_id', id).eq('status', 'pending');
+    if (be) throw new Error(`DB_ERROR:${be.message}`);
+    revalidatePath('/', 'layout');
+    return null;
+  });
 }
