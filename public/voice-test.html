@@ -1,0 +1,65 @@
+<!doctype html>
+<!-- Pakka Sauda: phone voice test (step C0.2). Owner: Workstream C.
+     Open on the demo Android phone in Chrome over HTTPS (the Vercel preview URL + /voice-test.html).
+     Tests: 1) browser Urdu speech recognition, 2) installed Urdu voices, 3) records a WAV-free sample for Uplift STT testing. -->
+<html lang="ur">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Voice test</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 16px; background: #fff; color: #111; }
+    button { font-size: 20px; padding: 14px 18px; margin: 6px 0; width: 100%; border-radius: 12px; border: 1px solid #999; }
+    pre { white-space: pre-wrap; background: #f4f4f4; padding: 10px; border-radius: 8px; font-size: 16px; }
+    h2 { font-size: 18px; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <h1>Pakka Sauda voice test</h1>
+  <p>Say each of these 10 phrases once with each method and tick how many came back right:<br>
+    دس ہزار کلو · پندرہ سو روپے · ڈیڑھ ہزار من · ساڑھے تین ہزار · اٹھارہ سو · بارہ ہزار · آلو · اگلے ہفتے · ہاں ٹھیک ہے · چالیس من</p>
+
+  <h2>1. Browser speech recognition (ur-PK)</h2>
+  <button id="rec">🎤 Start listening</button>
+  <pre id="recOut">—</pre>
+
+  <h2>2. Urdu text-to-speech voices on this phone</h2>
+  <button id="voices">List voices</button>
+  <button id="say">Say "دس ہزار کلو آلو"</button>
+  <pre id="voiceOut">—</pre>
+
+  <h2>3. Record a sample for Uplift Scribe</h2>
+  <button id="startRec">⏺ Record 5 seconds</button>
+  <pre id="mimeOut">—</pre>
+  <audio id="player" controls></audio>
+  <a id="download" download="sample.webm">Download sample</a>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    $('rec').onclick = () => {
+      if (!SR) { $('recOut').textContent = 'SpeechRecognition NOT available in this browser'; return; }
+      const r = new SR();
+      r.lang = 'ur-PK'; r.interimResults = false; r.maxAlternatives = 3;
+      r.onresult = (e) => { $('recOut').textContent = Array.from(e.results[0]).map(a => `${a.transcript}  (${(a.confidence*100).toFixed(0)}%)`).join('\n'); };
+      r.onerror = (e) => { $('recOut').textContent = 'error: ' + e.error; };
+      $('recOut').textContent = 'listening...'; r.start();
+    };
+    $('voices').onclick = () => {
+      const v = speechSynthesis.getVoices();
+      const ur = v.filter(x => x.lang.toLowerCase().startsWith('ur'));
+      $('voiceOut').textContent = `Total voices: ${v.length}\nUrdu voices: ${ur.map(x => x.name + ' ' + x.lang).join(', ') || 'NONE'}`;
+    };
+    $('say').onclick = () => { const u = new SpeechSynthesisUtterance('دس ہزار کلو آلو'); u.lang = 'ur-PK'; speechSynthesis.speak(u); };
+    $('startRec').onclick = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const rec = new MediaRecorder(stream); const chunks = [];
+      $('mimeOut').textContent = 'Recording format: ' + rec.mimeType + ' (check Uplift accepts this)';
+      rec.ondataavailable = (e) => chunks.push(e.data);
+      rec.onstop = () => { const blob = new Blob(chunks, { type: rec.mimeType }); const url = URL.createObjectURL(blob);
+        $('player').src = url; $('download').href = url; stream.getTracks().forEach(t => t.stop()); };
+      rec.start(); setTimeout(() => rec.stop(), 5000);
+    };
+  </script>
+</body>
+</html>
