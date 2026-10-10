@@ -1,14 +1,18 @@
-// Pakka Sauda: wholesaler sauda detail: terms, timeline, status panel. Party check, else 404. Owner: Workstream D.
-import Link from 'next/link';
+// Pakka Sauda: wholesaler sauda detail: status, lifecycle, settlement, terms, timeline. Party check, else 404. Owner: D.
 import { notFound } from 'next/navigation';
 import { SaudaActions } from '@/components/buyer/SaudaActions';
 import { SaudaTermsCard } from '@/components/buyer/SaudaTermsCard';
+import { SettlementBreakdown } from '@/components/buyer/SettlementBreakdown';
 import { Timeline } from '@/components/buyer/Timeline';
-import { AutoRefresh } from '@/components/shared/AutoRefresh';
-import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/design/Card';
+import { PageHeader } from '@/components/design/PageHeader';
+import { Stepper } from '@/components/design/Stepper';
+import { StatusPill } from '@/components/design/StatusPill';
+import { formatRs } from '@/lib/format';
 import { getSauda, getSaudaEvents } from '@/lib/queries';
-import { STATUS_LABEL } from '@/lib/sauda-machine';
 import { requireUser } from '@/lib/session';
+import { settle } from '@/lib/settle';
+import { AutoRefresh } from '@/components/shared/AutoRefresh';
 
 export default async function SaudaDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -16,24 +20,37 @@ export default async function SaudaDetailPage({ params }: { params: Promise<{ id
   const sauda = /^[0-9a-f-]{36}$/i.test(id) ? await getSauda(id) : null;
   if (!sauda || sauda.wholesaler_id !== user.id) notFound();
   const events = await getSaudaEvents(sauda.id);
+  const grade = sauda.resolved_grade ?? sauda.delivered_grade;
+  const r = sauda.weighed_kg != null && grade ? settle(sauda.terms, sauda.weighed_kg, grade) : null;
 
   return (
-    <div className="flex flex-col gap-4">
+    <>
       <AutoRefresh />
-      <Link href="/saudas" className="text-sm text-stone-500 hover:underline">
-        ← My saudas
-      </Link>
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-bold">Sauda with {sauda.farmer.name}</h1>
-        <Badge variant="outline">{STATUS_LABEL[sauda.status].en}</Badge>
-      </div>
-      <div className="grid gap-4 lg:grid-cols-2">
-        <div className="flex flex-col gap-4">
-          <SaudaActions sauda={sauda} />
-          <SaudaTermsCard sauda={sauda} />
+      <PageHeader
+        back={{ href: '/saudas', label: 'My saudas' }}
+        title={
+          <span className="flex flex-wrap items-center gap-3">
+            Sauda with {sauda.farmer.name}
+            <StatusPill kind="sauda" status={sauda.status} />
+          </span>
+        }
+        description={sauda.final_amount != null ? `Final amount ${formatRs(sauda.final_amount)}` : `Token ${formatRs(sauda.terms.token_amount)} · ${sauda.listing.district}`}
+      />
+      <div className="flex flex-col gap-4">
+        <Card bodyClassName="px-5 py-5">
+          <Stepper status={sauda.status} />
+        </Card>
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_380px]">
+          <div className="flex min-w-0 flex-col gap-4">
+            <SaudaActions sauda={sauda} />
+            {r ? <SettlementBreakdown r={r} /> : null}
+            <SaudaTermsCard sauda={sauda} />
+          </div>
+          <div className="min-w-0 lg:sticky lg:top-24">
+            <Timeline events={events} sauda={sauda} />
+          </div>
         </div>
-        <Timeline events={events} sauda={sauda} />
       </div>
-    </div>
+    </>
   );
 }

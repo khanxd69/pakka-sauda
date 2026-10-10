@@ -16,7 +16,7 @@ const TONE: Record<Tone, string> = {
 
 export function Pill({ tone = 'neutral', children, dot = false, className }: { tone?: Tone; children: ReactNode; dot?: boolean; className?: string }) {
   return (
-    <span className={cx('inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset', TONE[tone], className)}>
+    <span className={cx('inline-flex w-fit items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset', TONE[tone], className)}>
       {dot ? <span className="size-1.5 rounded-full bg-current" aria-hidden /> : null}
       {children}
     </span>

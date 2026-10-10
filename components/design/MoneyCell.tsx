@@ -5,8 +5,8 @@ import { cx } from './cn';
 
 export function MoneyCell({ amount, demo = false, pk = false, className }: { amount: number; demo?: boolean; pk?: boolean; className?: string }) {
   return (
-    <span className={cx('inline-flex items-center gap-2 tabular-nums', className)}>
-      <span dir="ltr">{pk ? formatRsPK(amount) : formatRs(amount)}</span>
+    <span className={cx('inline-flex flex-wrap items-center justify-end gap-x-2 gap-y-1 tabular-nums', className)}>
+      <span dir="ltr" className="whitespace-nowrap">{pk ? formatRsPK(amount) : formatRs(amount)}</span>
       {demo ? <DemoBadge /> : null}
     </span>
   );
