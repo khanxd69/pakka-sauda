@@ -31,15 +31,18 @@ export function VoiceNumberInput({ field, unit, onUnitChange, value, onChange }:
   const [canMic, setCanMic] = useState(false);
   useEffect(() => setCanMic(micSupported()), []);
 
+  const [extracting, setExtracting] = useState(false);
   const retry = () => void schedule(() => playUrl(clipUrl('mic_retry')), 'now');
 
   const mic = useMic(async (transcript) => {
     if (!transcript) return retry();
+    setExtracting(true);
     try {
       const res = await fetch('/api/voice/extract', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ transcript, field }),
+        signal: AbortSignal.timeout(3000),
       });
       const r = (await res.json()) as { value: number | null; unit: 'kg' | 'mann' | null };
       if (!res.ok || r.value == null) return retry();
@@ -48,8 +51,11 @@ export function VoiceNumberInput({ field, unit, onUnitChange, value, onChange }:
       onChange(v, transcript);
     } catch {
       retry();
+    } finally {
+      setExtracting(false);
     }
   });
+  const thinking = mic.state === 'thinking' || extracting;
 
   const press = (k: PadKey) => {
     if (k === 'clear') return onChange(null);
@@ -98,13 +104,13 @@ export function VoiceNumberInput({ field, unit, onUnitChange, value, onChange }:
         <button
           type="button"
           onClick={() => (mic.state === 'listening' ? mic.stop() : void mic.start())}
-          disabled={mic.state === 'thinking'}
+          disabled={thinking}
           aria-label="مائیک / Microphone"
           className={`mx-auto flex h-20 w-20 items-center justify-center rounded-full text-4xl text-white shadow-lg ${
-            mic.state === 'listening' ? 'animate-pulse bg-red-600' : mic.state === 'thinking' ? 'bg-stone-400' : 'bg-green-700'
+            mic.state === 'listening' ? 'animate-pulse bg-red-600' : thinking ? 'bg-stone-400' : 'bg-green-700'
           }`}
         >
-          {mic.state === 'thinking' ? (
+          {thinking ? (
             <span className="h-9 w-9 animate-spin rounded-full border-4 border-white/40 border-t-white" aria-hidden />
           ) : (
             '🎤'

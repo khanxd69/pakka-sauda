@@ -61,10 +61,22 @@ export function useMic(onTranscript: (transcript: string) => void) {
       text = Array.from(e.results).map((r) => r[0]?.transcript ?? '').join(' ');
     };
     rec.onerror = () => undefined;
-    rec.onend = () => finish(text);
-    stopRef.current = () => rec.stop();
+    const timer = setTimeout(() => rec.stop(), MAX_MS);
+    rec.onend = () => {
+      clearTimeout(timer);
+      finish(text);
+    };
+    stopRef.current = () => {
+      clearTimeout(timer);
+      rec.stop();
+    };
     setState('listening');
-    rec.start();
+    try {
+      rec.start();
+    } catch {
+      clearTimeout(timer);
+      finish('');
+    }
   }, [finish]);
 
   const startUplift = useCallback(async () => {
@@ -83,7 +95,8 @@ export function useMic(onTranscript: (transcript: string) => void) {
       try {
         const form = new FormData();
         form.append('audio', new Blob(chunks, { type: rec.mimeType || 'audio/webm' }));
-        const res = await fetch('/api/voice/stt', { method: 'POST', body: form });
+        // ASSUMPTION: STT gets 6 s (Scribe on a 6 s clip); extract keeps the 3 s cap in VoiceNumberInput.
+        const res = await fetch('/api/voice/stt', { method: 'POST', body: form, signal: AbortSignal.timeout(6000) });
         const json = res.ok ? ((await res.json()) as { transcript?: string }) : {};
         finish(json.transcript ?? '');
       } catch {
