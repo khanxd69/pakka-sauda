@@ -12,6 +12,7 @@
   "offers_intro":      { "screen": "F8",  "ur": "یہ بولیاں آئی ہیں۔ ہر بولی سننے کے لیے اسپیکر والا بٹن دبائیں۔", "roman": "Yeh boliyan aayi hain. Har boli sunne ke liye speaker wala button dabayein." },
   "offers_none":       { "screen": "F8",  "ur": "ابھی کوئی بولی نہیں آئی۔ بولی آنے پر یہاں نظر آئے گی۔", "roman": "Abhi koi boli nahin aayi. Boli aane par yahan nazar aaye gi." },
   "accept_confirm":    { "screen": "F8",  "ur": "کیا آپ یہ بولی قبول کرنا چاہتے ہیں؟ قبول کرنے کے بعد سودا پکا ہو جائے گا۔", "roman": "Kya aap yeh boli qubool karna chahte hain? Qubool karne ke baad sauda pakka ho jaye ga." },
+  "reject_confirm":    { "screen": "F8",  "ur": "کیا آپ یہ بولی نہیں لینا چاہتے؟ ہاں دبائیں تو یہ بولی ہٹ جائے گی۔", "roman": "Kya aap yeh boli nahin lena chahte? Haan dabayein to yeh boli hat jaye gi." },
   "sauda_created":     { "screen": "F9",  "ur": "مبارک ہو! سودا پکا ہو گیا۔", "roman": "Mubarak ho! Sauda pakka ho gaya." },
   "token_waiting":     { "screen": "F9",  "ur": "خریدار کی طرف سے ٹوکن کی رقم کا انتظار ہے۔", "roman": "Khareedar ki taraf se token ki raqam ka intezar hai." },
   "token_received":    { "screen": "F9",  "ur": "خریدار نے ٹوکن کی رقم دے دی ہے۔", "roman": "Khareedar ne token ki raqam de di hai." },
