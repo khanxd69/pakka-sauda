@@ -186,6 +186,8 @@
 
 /* Farmer screens: Urdu in Nastaliq, but every left-to-right number span uses the Latin UI font. */
 [lang='ur'] [dir='ltr'] {
+  direction: ltr;
+  unicode-bidi: isolate;
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   line-height: 1.2;
 }

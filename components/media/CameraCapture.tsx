@@ -2,6 +2,7 @@
 // Pakka Sauda: live-camera photo with location (P1). Owner: Workstream C. Props FROZEN (contracts-v1).
 // In-page getUserMedia camera only (no gallery picker), JPEG <= 1600 px at quality 0.8, browser geolocation
 // (5 s timeout, null if denied). Falls back to a capture="environment" file input, labelled as such.
+import { Camera, RotateCcw } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export interface CameraCaptureProps {
@@ -94,30 +95,35 @@ export function CameraCapture({ onCapture, hint }: CameraCaptureProps) {
   }
 
   return (
-    <div className="flex flex-col gap-2 rounded-xl border-2 border-dashed border-stone-300 p-3">
+    <div className="flex flex-col gap-2 rounded-xl border border-dashed border-line-strong bg-surface p-3">
       {mode === 'idle' ? (
-        <button type="button" onClick={open} className="flex min-h-14 items-center justify-center gap-2 rounded-xl bg-stone-900 px-4 text-lg text-white">
-          📷 <span>{hint ?? 'Take photo'}</span>
+        <button
+          type="button"
+          onClick={open}
+          className="flex min-h-14 items-center justify-center gap-3 rounded-xl border border-line-strong bg-subtle px-4 text-base text-ink transition-colors hover:bg-line/60"
+        >
+          <Camera className="size-6 shrink-0" strokeWidth={1.5} aria-hidden />
+          <span>{hint ?? 'Take photo'}</span>
         </button>
       ) : null}
 
       {mode === 'live' ? (
-        <div className="relative overflow-hidden rounded-lg bg-black">
+        <div className="relative overflow-hidden rounded-lg bg-ink">
           <video ref={videoRef} playsInline muted className="aspect-[3/4] w-full object-cover" />
-          {hint ? <div className="absolute inset-x-0 top-0 bg-black/60 p-2 text-center text-sm text-white">{hint}</div> : null}
+          {hint ? <div className="absolute inset-x-0 top-0 bg-ink/70 p-2 text-center text-sm text-white">{hint}</div> : null}
           <button
             type="button"
             onClick={shoot}
             disabled={busy}
             aria-label="Shutter"
-            className="absolute bottom-3 left-1/2 h-16 w-16 -translate-x-1/2 rounded-full border-4 border-white bg-white/30 active:scale-95"
+            className="absolute bottom-3 left-1/2 size-16 -translate-x-1/2 rounded-full border-4 border-white bg-white/30 transition-transform active:scale-95"
           />
         </div>
       ) : null}
 
       {mode === 'fallback' ? (
         <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium">Fallback camera{hint ? `: ${hint}` : ''}</span>
+          <span className="font-medium text-ink">Fallback camera{hint ? `: ${hint}` : ''}</span>
           <input type="file" accept="image/*" capture="environment" onChange={(e) => void fromInput(e.target.files?.[0])} />
         </label>
       ) : null}
@@ -125,16 +131,17 @@ export function CameraCapture({ onCapture, hint }: CameraCaptureProps) {
       {mode === 'done' && preview ? (
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={preview} alt="Captured" className="h-24 w-24 rounded-lg object-cover" />
+          <img src={preview} alt="Captured" className="size-24 rounded-lg object-cover ring-1 ring-line" />
           <button
             type="button"
             onClick={() => {
               setPreview(null);
               void open();
             }}
-            className="rounded-lg border px-3 py-2 text-sm"
+            className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-line-strong px-3 text-sm text-ink"
           >
-            ↺ Retake
+            <RotateCcw className="size-4" strokeWidth={1.5} aria-hidden />
+            Retake
           </button>
         </div>
       ) : null}

@@ -1,15 +1,16 @@
 'use client';
 // Pakka Sauda: the farmer picks the grade he believes, plus optional reason chips (no typing). Owner: Workstream B.
+import { Check, X } from 'lucide-react';
 import { useState } from 'react';
 import { uploadEvidence } from '@/app/actions/evidence';
 import { farmerDispute } from '@/app/actions/saudas';
 import { CameraCapture } from '@/components/media/CameraCapture';
 import { playUrl, schedule } from '@/components/voice/player';
-import { AudioPrompt } from '@/components/voice/AudioPrompt';
 import type { Grade } from '@/lib/types';
 import { clipUrl } from '@/lib/voice/clips';
 import { BigButton } from './BigButton';
 import { GradeCard } from './GradeCard';
+import { PromptHeading } from './PromptHeading';
 import { useFarmerAction } from './useFarmerAction';
 
 const REASONS = ['آلو بڑے ہیں', 'داغ کم ہیں', 'وزن غلط ہے'];
@@ -46,11 +47,10 @@ export function DisputeSheet({ open, saudaId, onClose }: { open: boolean; saudaI
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/40" role="dialog" aria-modal="true">
-      <div className="mx-auto flex max-h-[92dvh] w-full max-w-md flex-col gap-3 overflow-y-auto rounded-t-3xl bg-white p-5 pb-8 shadow-2xl">
-        <div className="flex justify-center">
-          <AudioPrompt clip="dispute_grade_ask" autoPlay />
-        </div>
+    <div className="fixed inset-0 z-50 flex items-end bg-ink/40" role="dialog" aria-modal="true">
+      <div className="pb-safe mx-auto flex max-h-[92dvh] w-full max-w-md flex-col gap-3 overflow-y-auto rounded-t-3xl bg-surface px-5 pt-3 shadow-card">
+        <span className="mx-auto h-1.5 w-12 shrink-0 rounded-full bg-line-strong" aria-hidden />
+        <PromptHeading clip="dispute_grade_ask" autoPlay size="md" />
         {GRADES.map((g) => (
           <GradeCard key={g} grade={g} selected={grade === g} onSelect={() => setGrade(g)} />
         ))}
@@ -61,17 +61,19 @@ export function DisputeSheet({ open, saudaId, onClose }: { open: boolean; saudaI
               type="button"
               onClick={() => toggle(r)}
               aria-pressed={reasons.includes(r)}
-              className={`min-h-14 rounded-full border-2 px-4 text-xl ${reasons.includes(r) ? 'border-[#b91c1c] bg-red-50 font-bold' : 'border-stone-300 bg-white'}`}
+              className={`min-h-14 rounded-full border px-4 text-lg transition-colors duration-150 ${
+                reasons.includes(r) ? 'border-danger bg-danger-soft font-semibold text-danger' : 'border-line-strong bg-surface text-ink'
+              }`}
             >
               {r}
             </button>
           ))}
         </div>
         <CameraCapture hint="اپنے آلو کی تصویر لیں" onCapture={(file, coords) => setPhoto({ file, coords })} />
-        <BigButton variant="stop" icon="✓" busy={busy || uploading} disabled={!grade} onClick={submit}>
+        <BigButton variant="stop" icon={<Check strokeWidth={2.5} aria-hidden />} busy={busy || uploading} disabled={!grade} onClick={submit}>
           گریڈ غلط ہے
         </BigButton>
-        <BigButton variant="plain" icon="✗" disabled={busy || uploading} onClick={onClose}>
+        <BigButton variant="plain" icon={<X strokeWidth={2} aria-hidden />} disabled={busy || uploading} onClick={onClose}>
           نہیں
         </BigButton>
       </div>
