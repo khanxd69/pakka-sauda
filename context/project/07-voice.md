@@ -25,7 +25,20 @@ Not useful here: Amazon Transcribe and Amazon Polly don't list Urdu.
     - endpoint reported as `https://api.upliftai.org/v1/transcribe/speech-to-text`
     - models: `scribe` (40 credits/min) or `scribe-mini` (20 credits/min)
     - `language: 'ur'`; `domain: 'farming'` | `'phone-commerce'`
-    - **The multipart field names, auth header and response JSON field are NOT confirmed.** Step C0.2 confirms them with one curl call before any code is written, then records them here.
+    - **Confirmed in C0.2 (2026-10-10, one curl call, HTTP 200):**
+        - `POST https://api.upliftai.org/v1/transcribe/speech-to-text`
+        - header: `Authorization: Bearer <UPLIFT_API_KEY>` (multipart, so no JSON content-type)
+        - multipart fields: `file` (the audio), `model` (`scribe` | `scribe-mini`), `language=ur`, `domain=farming`
+        - response JSON: `{ "transcript": "..." }`
+        - Example: the TTS clip "دس ہزار کلو آلو" came back as `{"transcript":"10,000 کلو آلو۔"}`. Scribe returns **digits** for numbers, which `parseUrduNumber` already handles.
+        - `scribe-mini` (half the credits) on the same clip: `{"transcript":"دس ہزار کلو آلو"}` (Urdu words; also parsed).
+        - Tested with MP3 only. Android Chrome's `MediaRecorder` produces `audio/webm;codecs=opus`. Confirm Uplift accepts webm during the phone test (method 3).
+
+        ```
+        curl -X POST https://api.upliftai.org/v1/transcribe/speech-to-text \
+          -H "Authorization: Bearer $UPLIFT_API_KEY" \
+          -F "file=@sample.mp3;type=audio/mpeg" -F "model=scribe" -F "language=ur" -F "domain=farming"
+        ```
 - Keys look like `sk_api_...`. Get one at <https://platform.upliftai.org/studio/api-keys>.
 
 ## Step C0.2: phone test (decides the tiers; 15 min)
