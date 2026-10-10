@@ -23,6 +23,7 @@ export function StatCard({
   icon,
   spark,
   emphasis = false,
+  className,
 }: {
   label: string;
   value: ReactNode;
@@ -30,15 +31,16 @@ export function StatCard({
   icon?: ReactNode;
   spark?: number[];
   emphasis?: boolean;
+  className?: string;
 }) {
   return (
-    <div className={cx('flex flex-col gap-3 rounded-xl border border-line bg-surface p-5 shadow-card', emphasis && 'ring-1 ring-brand/15')}>
+    <div className={cx('flex min-w-0 flex-col gap-3 rounded-xl border border-line bg-surface p-4 shadow-card sm:p-5', className)}>
       <div className="flex items-center justify-between gap-2">
         <span className="text-[13px] font-medium text-ink-muted">{label}</span>
         {icon ? <span className="text-ink-muted [&_svg]:size-4">{icon}</span> : null}
       </div>
-      <div className="flex items-end justify-between gap-3">
-        <span className={cx('font-semibold tabular-nums tracking-tight text-ink', emphasis ? 'text-[32px] leading-none' : 'text-2xl leading-none')}>{value}</span>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <span className={cx('whitespace-nowrap font-semibold tabular-nums tracking-tight text-ink', emphasis ? 'text-[32px] leading-none' : 'text-2xl leading-none')}>{value}</span>
         {spark ? <Sparkline values={spark} /> : null}
       </div>
       {sub ? <span className="text-xs text-ink-muted">{sub}</span> : null}

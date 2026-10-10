@@ -1,47 +1,54 @@
-// Pakka Sauda: admin tiles from getAdminStats(): settled value and fee revenue big, then counts. Owner: Workstream D.
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+// Pakka Sauda: admin KPI cards and the sauda-status distribution, from getAdminStats() and existing queries. Owner: D.
+import { AlertTriangle, Banknote, BadgeCheck, Handshake, Receipt, Sprout } from 'lucide-react';
+import { Card } from '@/components/design/Card';
+import { StatCard } from '@/components/design/StatCard';
 import { formatRs } from '@/lib/format';
 import { STATUS_LABEL } from '@/lib/sauda-machine';
 import type { AdminStats, SaudaStatus } from '@/lib/types';
 
-function Tile({ label, value, big = false }: { label: string; value: string | number; big?: boolean }) {
-  return (
-    <div className={`flex flex-col gap-1 rounded-2xl border bg-white p-5 ${big ? 'sm:col-span-2' : ''}`}>
-      <span className="text-sm text-stone-500">{label}</span>
-      <span className={`${big ? 'text-4xl' : 'text-2xl'} font-bold tabular-nums`}>{value}</span>
-    </div>
-  );
-}
+const BAR: Record<SaudaStatus, string> = {
+  token_due: 'bg-warning',
+  awaiting_collection: 'bg-info',
+  collected: 'bg-attn',
+  disputed: 'bg-danger',
+  agreed: 'bg-brand',
+  settled: 'bg-success',
+  cancelled: 'bg-line-strong',
+};
 
-export function StatTiles({ stats }: { stats: AdminStats }) {
+export function StatTiles({ stats, verifiedBuyers, settledSeries }: { stats: AdminStats; verifiedBuyers: number; settledSeries: number[] }) {
+  const open = stats.by_status.token_due + stats.by_status.awaiting_collection + stats.by_status.collected + stats.by_status.disputed + stats.by_status.agreed;
+  const total = Object.values(stats.by_status).reduce((a, b) => a + b, 0);
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid gap-4 sm:grid-cols-4">
-        <Tile big label="Settled deal value" value={formatRs(stats.settled_value)} />
-        <Tile big label="Fee revenue (1%, paid by buyers)" value={formatRs(stats.fee_revenue)} />
-        <Tile label="Active listings" value={stats.active_listings} />
-        <Tile label="Open disputes" value={stats.open_disputes} />
-        <Tile label="Farmers" value={stats.farmers} />
-        <Tile label="Wholesalers" value={stats.wholesalers} />
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
+        <StatCard emphasis className="col-span-2 sm:col-span-1" label="Settled deal value" value={formatRs(stats.settled_value)} icon={<Banknote strokeWidth={1.5} />} spark={settledSeries.length > 1 ? settledSeries : undefined} sub="Sum of final amounts on settled saudas" />
+        <StatCard emphasis className="col-span-2 sm:col-span-1" label="Fee revenue" value={formatRs(stats.fee_revenue)} icon={<Receipt strokeWidth={1.5} />} sub="1% paid by buyers, counted only when settled" />
+        <StatCard label="Open saudas" value={open} icon={<Handshake strokeWidth={1.5} />} sub="Token due to agreed" />
+        <StatCard label="Open disputes" value={stats.open_disputes} icon={<AlertTriangle strokeWidth={1.5} />} />
+        <StatCard label="Active listings" value={stats.active_listings} icon={<Sprout strokeWidth={1.5} />} />
+        <StatCard label="Verified buyers" value={`${verifiedBuyers} / ${stats.wholesalers}`} icon={<BadgeCheck strokeWidth={1.5} />} sub={`${stats.farmers} farmers on the platform`} />
       </div>
-      <div className="rounded-2xl border bg-white">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Sauda status</TableHead>
-              <TableHead className="text-right">Count</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+      <Card title="Saudas by status" description={`${total} in total`}>
+        <div className="flex flex-col gap-4">
+          <div className="flex h-2.5 overflow-hidden rounded-full bg-subtle" aria-hidden>
+            {(Object.keys(stats.by_status) as SaudaStatus[]).map((s) =>
+              stats.by_status[s] > 0 ? <span key={s} className={BAR[s]} style={{ width: `${(stats.by_status[s] / Math.max(total, 1)) * 100}%` }} /> : null,
+            )}
+          </div>
+          <ul className="grid grid-cols-1 gap-x-8 gap-y-2 sm:grid-cols-2">
             {(Object.keys(stats.by_status) as SaudaStatus[]).map((s) => (
-              <TableRow key={s}>
-                <TableCell>{STATUS_LABEL[s].en}</TableCell>
-                <TableCell className="text-right tabular-nums">{stats.by_status[s]}</TableCell>
-              </TableRow>
+              <li key={s} className="flex items-center justify-between gap-3 text-sm">
+                <span className="flex items-center gap-2 text-ink-muted">
+                  <span className={`size-2 rounded-full ${BAR[s]}`} aria-hidden />
+                  {STATUS_LABEL[s].en}
+                </span>
+                <span className="tabular-nums text-ink">{stats.by_status[s]}</span>
+              </li>
             ))}
-          </TableBody>
-        </Table>
-      </div>
+          </ul>
+        </div>
+      </Card>
     </div>
   );
 }
