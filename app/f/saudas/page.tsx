@@ -11,12 +11,15 @@ export default async function FarmerSaudasPage() {
   const user = await requireUser('farmer');
   // Saudas that need the farmer (collected, agreed) first, then the rest in their newest-first order.
   const needs = (st: string) => (st === 'collected' || st === 'agreed' ? 0 : 1);
-  const saudas = (await getSaudasForUser(user)).sort((a, b) => needs(a.status) - needs(b.status));
+  const all = await getSaudasForUser(user);
+  const saudas = all.filter((s) => s.status !== 'settled').sort((a, b) => needs(a.status) - needs(b.status));
+  const settled = all.filter((s) => s.status === 'settled');
+  const totalEarned = settled.reduce((sum, s) => sum + (s.final_amount ?? 0), 0); // stored settle() amounts
   return (
     <>
       <AutoRefresh />
       <ScreenTitle>میرے سودے</ScreenTitle>
-      {saudas.length === 0 ? <div className="py-16 text-center text-8xl">📭</div> : null}
+      {all.length === 0 ? <div className="py-16 text-center text-8xl">📭</div> : null}
       <div className="flex flex-col gap-3">
         {saudas.map((s) => (
           <Link
@@ -41,6 +44,20 @@ export default async function FarmerSaudasPage() {
           </Link>
         ))}
       </div>
+      {settled.length > 0 ? (
+        <section className="mt-8 flex flex-col gap-3">
+          <div className="flex items-center justify-between rounded-2xl bg-green-100 p-4">
+            <span className="text-xl font-bold">✅ کل کمائی</span>
+            <span dir="ltr" className="text-3xl font-bold tabular-nums text-green-900">{formatRsPK(totalEarned)}</span>
+          </div>
+          {settled.map((s) => (
+            <Link key={s.id} href={`/f/saudas/${s.id}`} className="flex items-center justify-between rounded-2xl border border-stone-200 bg-white p-3">
+              <span className="text-lg">{s.buyer.name_ur ?? s.buyer.name} صاحب</span>
+              <span dir="ltr" className="text-xl font-bold tabular-nums">{s.final_amount != null ? formatRsPK(s.final_amount) : ''}</span>
+            </Link>
+          ))}
+        </section>
+      ) : null}
     </>
   );
 }

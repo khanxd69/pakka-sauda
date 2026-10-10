@@ -7,7 +7,7 @@ import { validateBid } from '@/lib/rules';
 import { IdSchema, PlaceBidSchema, type PlaceBidInput } from '@/lib/schemas';
 import { requireUser } from '@/lib/session';
 import type { ActionResult, Grade, ListingStatus } from '@/lib/types';
-import { notImplemented, run } from './_result';
+import { run } from './_result';
 
 /** Wholesaler places or replaces (upsert) his bid on a listing. Runs validateBid(). Returns the bid id. */
 export async function placeBid(input: PlaceBidInput): Promise<ActionResult<{ id: string }>> {
@@ -110,6 +110,17 @@ export async function acceptBid(bidId: string): Promise<ActionResult<{ saudaId: 
 
 /** Farmer declines one pending bid (P1). */
 export async function rejectBid(bidId: string): Promise<ActionResult> {
-  void bidId;
-  return notImplemented();
+  return run(async () => {
+    const user = await requireUser('farmer');
+    const id = IdSchema.parse(bidId);
+    const { data: bid, error: be } = await db().from('bids').select('status, listing:listings(farmer_id)').eq('id', id).maybeSingle();
+    if (be) throw new Error(`DB_ERROR:${be.message}`);
+    const listing = bid?.listing as unknown as { farmer_id: string } | null;
+    if (!bid || !listing || listing.farmer_id !== user.id) throw new Error('NOT_YOUR_LISTING');
+    const { data, error } = await db().from('bids').update({ status: 'rejected' }).eq('id', id).eq('status', 'pending').select('id');
+    if (error) throw new Error(`DB_ERROR:${error.message}`);
+    if (!data || data.length === 0) throw new Error('BID_NOT_PENDING');
+    revalidatePath('/', 'layout');
+    return null;
+  });
 }

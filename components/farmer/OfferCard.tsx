@@ -2,7 +2,7 @@
 // Pakka Sauda: one buyer's offer for the farmer (F8): ladder per mann, net comparison, listen, accept. Owner: B.
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { acceptBid } from '@/app/actions/bids';
+import { acceptBid, rejectBid } from '@/app/actions/bids';
 import { playUrl, schedule } from '@/components/voice/player';
 import { SpeakButton } from '@/components/voice/SpeakButton';
 import { formatRsPK, perKgToPerMann } from '@/lib/format';
@@ -20,6 +20,7 @@ const GRADES: Grade[] = ['A', 'B', 'C'];
 export function OfferCard({ bid, refPricePerKg }: { bid: BidView; refPricePerKg: number | null }) {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
+  const [declining, setDeclining] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const priceKg: Record<Grade, number | null> = { A: bid.price_a, B: bid.price_b, C: bid.price_c };
@@ -43,6 +44,15 @@ export function OfferCard({ bid, refPricePerKg }: { bid: BidView; refPricePerKg:
     setBusy(false);
     setConfirming(false);
     void schedule(() => playUrl(clipUrl('error_generic')), 'now');
+    router.refresh();
+  }
+
+  async function decline() {
+    setBusy(true);
+    const res = await rejectBid(bid.id);
+    setBusy(false);
+    setDeclining(false);
+    if (!res.ok) void schedule(() => playUrl(clipUrl('error_generic')), 'now');
     router.refresh();
   }
 
@@ -98,6 +108,14 @@ export function OfferCard({ bid, refPricePerKg }: { bid: BidView; refPricePerKg:
       <BigButton variant="go" icon="✓" onClick={() => setConfirming(true)}>
         قبول کریں
       </BigButton>
+
+      <BigButton variant="plain" icon="✗" onClick={() => setDeclining(true)}>
+        یہ نہیں
+      </BigButton>
+
+      <ConfirmSheet open={declining} clip="reject_confirm" busy={busy} onYes={decline} onNo={() => setDeclining(false)}>
+        <p className="text-center text-2xl font-bold">✗ یہ نہیں · {buyerNameUr} صاحب</p>
+      </ConfirmSheet>
 
       <ConfirmSheet open={confirming} clip="accept_confirm" busy={busy} onYes={accept} onNo={() => setConfirming(false)}>
         <p className="text-center text-2xl font-bold">{buyerNameUr} صاحب</p>

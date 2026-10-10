@@ -1,14 +1,15 @@
 'use server';
 // Pakka Sauda: admin actions. Owner: Workstream A. Signatures FROZEN (contracts-v1).
-// resolveDispute is real (A2.5); setVerified (A3.4) and resetDemo (A3.5) come in phase 3.
+// resolveDispute (A2.5), setVerified (A3.4), resetDemo (A3.5).
 import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/db';
-import { ResolveDisputeSchema, type ResolveDisputeInput } from '@/lib/schemas';
+import { IdSchema, ResolveDisputeSchema, type ResolveDisputeInput } from '@/lib/schemas';
 import { requireUser } from '@/lib/session';
 import { settle } from '@/lib/settle';
 import { applyCancel, applyTransition, loadSauda } from '@/lib/transition';
 import type { ActionResult, SaudaStatus } from '@/lib/types';
-import { notImplemented, run } from './_result';
+import { z } from 'zod';
+import { run } from './_result';
 
 /** Reviewer rules a grade. disputed -> agreed (recalculated) or cancelled/grade_not_accepted. */
 export async function resolveDispute(input: ResolveDisputeInput): Promise<ActionResult<{ status: SaudaStatus }>> {
@@ -48,12 +49,25 @@ export async function resolveDispute(input: ResolveDisputeInput): Promise<Action
 }
 
 export async function setVerified(profileId: string, verified: boolean): Promise<ActionResult> {
-  void profileId;
-  void verified;
-  return notImplemented();
+  return run(async () => {
+    await requireUser('admin');
+    const id = IdSchema.parse(profileId);
+    const v = z.boolean().parse(verified);
+    const { data, error } = await db().from('profiles').update({ verified: v }).eq('id', id).eq('role', 'wholesaler').select('id');
+    if (error) throw new Error(`DB_ERROR:${error.message}`);
+    if (!data || data.length === 0) throw new Error('UNKNOWN_USER');
+    revalidatePath('/', 'layout');
+    return null;
+  });
 }
 
 /** Calls the reset_demo() SQL function. Rehearsals only. */
 export async function resetDemo(): Promise<ActionResult> {
-  return notImplemented();
+  return run(async () => {
+    await requireUser('admin');
+    const { error } = await db().rpc('reset_demo');
+    if (error) throw new Error(`DB_ERROR:${error.message}`);
+    revalidatePath('/', 'layout');
+    return null;
+  });
 }
