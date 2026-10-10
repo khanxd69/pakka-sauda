@@ -2,11 +2,12 @@
 // Pakka Sauda: F2-F7 sell wizard. One question per screen, audio first, read-back before publishing. Owner: B.
 // All answers live in one state object; nothing is submitted before the F7 read-back.
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createListing } from '@/app/actions/listings';
 import { AudioPrompt } from '@/components/voice/AudioPrompt';
 import { playUrl, schedule } from '@/components/voice/player';
 import { SpeakButton } from '@/components/voice/SpeakButton';
+import { useOnline } from '@/components/voice/useOnline';
 import { VoiceNumberInput } from '@/components/voice/VoiceNumberInput';
 import { estimateToRange, mannToKg, perMannToPerKg } from '@/lib/format';
 import type { Grade, ReferencePrice } from '@/lib/types';
@@ -49,11 +50,42 @@ function isoPlus(days: number): string {
 const READY_DAYS: Record<ReadyWhen, [number, number]> = { this_week: [0, 6], next_week: [7, 13], two_weeks: [14, 20] };
 
 const GRADES: Grade[] = ['A', 'B', 'C'];
+const DRAFT_KEY = 'ps_sell_draft';
+const EMPTY: SellState = { qtyValue: null, unit: 'mann', ready: null, expectedGrade: null, minPricePerMann: null, transcripts: [] };
 
 export function SellWizard({ referencePrices }: { referencePrices: ReferencePrice[] }) {
   const [step, setStep] = useState<Step>('crop');
-  const [s, setS] = useState<SellState>({ qtyValue: null, unit: 'mann', ready: null, expectedGrade: null, minPricePerMann: null, transcripts: [] });
+  const [s, setS] = useState<SellState>(EMPTY);
   const [busy, setBusy] = useState(false);
+  const [restored, setRestored] = useState(false);
+  const online = useOnline();
+
+  // P1: keep the answers on the phone so a reload or a dropped connection loses nothing.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (raw) {
+        const d = JSON.parse(raw) as { step?: Step; s?: SellState };
+        if (d.s) setS({ ...EMPTY, ...d.s });
+        if (d.step && d.step !== 'done') setStep(d.step);
+      }
+    } catch {
+      /* no storage: start fresh */
+    }
+    setRestored(true);
+  }, []);
+  useEffect(() => {
+    if (!restored) return;
+    try {
+      if (step === 'done') localStorage.removeItem(DRAFT_KEY);
+      else localStorage.setItem(DRAFT_KEY, JSON.stringify({ step, s }));
+    } catch {
+      /* ignore */
+    }
+  }, [restored, step, s]);
+  useEffect(() => {
+    if (!online && step === 'review') void schedule(() => playUrl(clipUrl('offline')), 'now');
+  }, [online, step]);
   const update = (patch: Partial<SellState>) => setS((prev) => ({ ...prev, ...patch }));
   const addTranscript = (t?: string) => (t ? s.transcripts.concat(t) : s.transcripts);
 
@@ -198,7 +230,7 @@ export function SellWizard({ referencePrices }: { referencePrices: ReferencePric
       <div className="sticky bottom-0 flex flex-col gap-3 bg-stone-50 py-4">
         {step === 'review' ? (
           <>
-            <BigButton variant="go" icon="✓" busy={busy} onClick={publish}>
+            <BigButton variant="go" icon="✓" busy={busy} disabled={!online} onClick={publish}>
               ٹھیک ہے
             </BigButton>
             <BigButton variant="plain" icon="✎" disabled={busy} onClick={() => go('qty')}>
