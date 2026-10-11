@@ -22,7 +22,7 @@ export default async function FarmerHome() {
     <>
       <AutoRefresh />
       <div className="flex flex-col gap-5 pt-5">
-        <PromptHeading clip="home_welcome" autoPlay />
+        <div className="rounded-2xl border border-brand/10 bg-brand-soft/60 p-4"><PromptHeading clip="home_welcome" autoPlay /></div>
         {offers.length > 0 ? (
           <div className="rounded-2xl border border-attn/30 bg-attn-soft p-4">
             <PromptHeading clip="home_new_offers" autoPlay size="md" />

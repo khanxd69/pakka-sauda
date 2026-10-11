@@ -30,7 +30,7 @@
   --color-earth: var(--ps-earth);
   --color-earth-dark: var(--ps-earth-dark);
   --color-earth-soft: var(--ps-earth-soft);
-  --shadow-card: 0 1px 2px rgba(16, 24, 20, 0.06);
+  --shadow-card: 0 2px 4px rgba(31, 49, 37, 0.025), 0 12px 32px -16px rgba(31, 49, 37, 0.14);
   --font-urdu: var(--font-nastaliq);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -76,16 +76,16 @@
 }
 
 :root {
-  --ps-page: #f8fafb;
+  --ps-page: #f8f7f2;
   --ps-surface: #ffffff;
-  --ps-subtle: #f1f5f4;
-  --ps-line: #e4e9e7;
-  --ps-line-strong: #cbd5d1;
-  --ps-ink: #0f1a17;
-  --ps-ink-muted: #5b6b66;
-  --ps-brand: #166534;
-  --ps-brand-hover: #14532d;
-  --ps-brand-soft: #e7f4ec;
+  --ps-subtle: #f1f2eb;
+  --ps-line: #e3e6db;
+  --ps-line-strong: #c6cebf;
+  --ps-ink: #21392b;
+  --ps-ink-muted: #637063;
+  --ps-brand: #2d603e;
+  --ps-brand-hover: #224b30;
+  --ps-brand-soft: #eaf0e3;
   --ps-attn: #b45309;
   --ps-attn-soft: #fef3c7;
   --ps-success: #15803d;
@@ -98,7 +98,7 @@
   --ps-info-soft: #dbeafe;
   --ps-earth: #c9a57c;
   --ps-earth-dark: #8a6a48;
-  --ps-earth-soft: #f4ece2;
+  --ps-earth-soft: #f2ebdd;
 
   /* shadcn tokens mapped onto the Pakka Sauda palette */
   --background: var(--ps-page);
@@ -124,7 +124,7 @@
   --chart-3: #86a893;
   --chart-4: var(--ps-attn);
   --chart-5: var(--ps-line-strong);
-  --radius: 0.5rem;
+  --radius: 0.75rem;
   --sidebar: var(--ps-surface);
   --sidebar-foreground: var(--ps-ink);
   --sidebar-primary: var(--ps-brand);
@@ -154,6 +154,50 @@
     outline: 2px solid var(--ps-brand);
     outline-offset: 2px;
   }
+  ::selection {
+    background: var(--ps-brand-soft);
+    color: var(--ps-brand);
+  }
+  button:not(:disabled), summary, select {
+    cursor: pointer;
+  }
+}
+
+.landing-page {
+  background: radial-gradient(ellipse at 95% 5%, var(--ps-brand-soft), transparent 42%), var(--ps-page);
+}
+.hero-title {
+  font-weight: 650;
+}
+.primary-link {
+  box-shadow: 0 8px 20px -10px var(--ps-brand);
+}
+.primary-link:hover {
+  transform: translateY(-2px);
+}
+.role-card {
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+.role-card:hover {
+  border-color: var(--ps-line-strong);
+  box-shadow: 0 14px 32px -20px rgba(31, 49, 37, 0.3);
+}
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: var(--ps-brand);
+  color: white;
+  transform: translateY(-150%);
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+.dashboard-sidebar {
+  background: linear-gradient(180deg, var(--ps-surface) 60%, var(--ps-brand-soft));
 }
 
 @media (prefers-reduced-motion: reduce) {

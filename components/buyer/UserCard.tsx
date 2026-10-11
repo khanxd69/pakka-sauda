@@ -18,11 +18,11 @@ export function UserCard({ profile }: { profile: Profile }) {
     <form action={setDemoUser.bind(null, profile.id)}>
       <button
         type="submit"
-        className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors duration-150 hover:bg-subtle"
+        className="group flex min-h-16 w-full flex-wrap items-center gap-3 rounded-2xl px-3 py-3 text-left transition-colors duration-150 hover:bg-brand-soft"
       >
         <Avatar name={title} />
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="flex items-center gap-2 truncate text-sm font-medium text-ink">
+          <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold text-ink">
             {title}
             {profile.name_ur ? (
               <span lang="ur" dir="rtl" className="font-urdu text-xs font-normal text-ink-muted">

@@ -17,7 +17,7 @@ export function HomeTiles({ offers, saudas, needsAction = false }: { offers: num
     <nav className="flex flex-col gap-3">
       <Link
         href="/f/sell"
-        className="flex min-h-28 items-center gap-4 rounded-2xl bg-brand p-4 text-white shadow-card transition-colors duration-150 hover:bg-brand-hover active:scale-[0.99]"
+        className="flex min-h-32 items-center gap-4 rounded-3xl border border-brand/20 bg-brand p-5 text-white shadow-card transition-colors duration-150 hover:bg-brand-hover active:scale-[0.99]"
       >
         <PotatoArt kind="crop" className="size-20 shrink-0 rounded-xl" />
         <span className="flex-1 text-[28px] font-bold leading-[1.9]">فصل بیچیں</span>

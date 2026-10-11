@@ -25,7 +25,7 @@ export function BigButton({
       {...rest}
       disabled={disabled || busy}
       aria-busy={busy}
-      className={`flex min-h-14 w-full items-center justify-center gap-3 rounded-xl px-4 text-xl font-semibold transition-colors duration-150 active:scale-[0.99] disabled:opacity-45 [&_svg]:size-6 ${VARIANT[variant]} ${className ?? ''}`}
+      className={`flex min-h-16 w-full items-center justify-center gap-3 rounded-2xl px-4 py-2 text-xl font-semibold transition-colors duration-150 active:scale-[0.99] disabled:opacity-45 [&_svg]:size-6 ${VARIANT[variant]} ${className ?? ''}`}
     >
       {busy ? (
         <LoaderCircle className="animate-spin" strokeWidth={2} aria-hidden />

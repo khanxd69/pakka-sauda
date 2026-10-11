@@ -1,6 +1,7 @@
 // Pakka Sauda: open listings in the market: a table on desktop, cards on mobile. Owner: Workstream D.
 import Link from 'next/link';
-import { ArrowRight, MapPin } from 'lucide-react';
+import { ArrowRight, MapPin, Sprout } from 'lucide-react';
+import { PotatoArt } from '@/components/farmer/PotatoArt';
 import { Avatar } from '@/components/design/Avatar';
 import { num, th } from '@/components/design/DataTable';
 import { Pill, type Tone } from '@/components/design/Pill';
@@ -18,7 +19,11 @@ const mann = (kg: number) => kgToMann(kg).toLocaleString('en-US');
 
 export function ListingCard({ listing: l }: { listing: ListingView }) {
   return (
-    <Link href={`/market/${l.id}`} className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4 shadow-card transition-colors hover:border-line-strong">
+    <Link href={`/market/${l.id}`} className="group flex min-w-0 flex-col gap-4 overflow-hidden rounded-2xl border border-line bg-surface p-5 shadow-card transition-all hover:border-brand/30 hover:shadow-lg">
+      <div className="-mx-5 -mt-5 flex items-center justify-between border-b border-line bg-earth-soft/60 px-5 py-4">
+        <div className="flex flex-col gap-2"><span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-brand"><Sprout className="size-3.5" aria-hidden /> Open harvest</span><span className="text-xl font-semibold tracking-tight text-ink">Potatoes</span><span className="text-xs text-ink-muted">Declared by farmer</span></div>
+        <PotatoArt kind={l.expected_grade} className="size-20 rounded-2xl" />
+      </div>
       <div className="flex items-center gap-3">
         <Avatar name={l.farmer.name} size="sm" />
         <div className="flex min-w-0 flex-1 flex-col">
@@ -30,7 +35,7 @@ export function ListingCard({ listing: l }: { listing: ListingView }) {
         </div>
         <GradeBadge grade={l.expected_grade} />
       </div>
-      <div className="flex items-baseline justify-between gap-2">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
         <span className="text-lg font-semibold tabular-nums text-ink">
           {formatKg(l.qty_low_kg)} – {formatKg(l.qty_high_kg)}
         </span>
@@ -38,20 +43,18 @@ export function ListingCard({ listing: l }: { listing: ListingView }) {
           {mann(l.qty_low_kg)}–{mann(l.qty_high_kg)} mann
         </span>
       </div>
-      <div className="grid grid-cols-3 gap-2 border-t border-line pt-3 text-xs">
+      <div className="grid grid-cols-2 gap-3 border-t border-line pt-4 text-xs">
         <div className="flex flex-col">
           <span className="text-ink-muted">Ready</span>
-          <span className="text-ink">{formatDate(l.ready_from)}</span>
+          <span className="mt-1 text-ink">{formatDate(l.ready_from)} – {formatDate(l.ready_to)}</span>
         </div>
         <div className="flex flex-col">
           <span className="text-ink-muted">Minimum</span>
-          <span className="tabular-nums text-ink">{formatRs(l.min_price_per_kg)}/kg</span>
-        </div>
-        <div className="flex flex-col">
-          <span className="text-ink-muted">Bids</span>
-          <span className="tabular-nums text-ink">{l.bid_count}</span>
+          <span className="mt-1 font-semibold tabular-nums text-ink">{formatRs(l.min_price_per_kg)}/kg</span>
+          <span className="mt-1 tabular-nums text-ink-muted">{formatRs(perKgToPerMann(l.min_price_per_kg))}/mann</span>
         </div>
       </div>
+      <div className="mt-auto flex items-center justify-between border-t border-line pt-4"><span className="text-xs tabular-nums text-ink-muted">{l.bid_count} pending bid{l.bid_count === 1 ? '' : 's'}</span><span className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-brand-soft px-4 text-xs font-semibold text-brand transition-colors group-hover:bg-brand group-hover:text-white">View & bid <ArrowRight className="size-4" aria-hidden /></span></div>
     </Link>
   );
 }

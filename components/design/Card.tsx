@@ -27,9 +27,9 @@ export function Card({
     subtle: 'border-line bg-subtle',
   }[tone];
   return (
-    <section className={cx('rounded-xl border shadow-card', toneCls, className)}>
+    <section className={cx('rounded-2xl border shadow-card', toneCls, className)}>
       {title || actions ? (
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line px-5 py-4">
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line px-5 py-5 sm:px-6">
           <div className="flex min-w-0 flex-col gap-0.5">
             {title ? <h2 className="text-base font-semibold text-ink">{title}</h2> : null}
             {description ? <p className="text-[13px] text-ink-muted">{description}</p> : null}
@@ -37,7 +37,7 @@ export function Card({
           {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
         </div>
       ) : null}
-      <div className={cx('px-5 py-4', bodyClassName)}>{children}</div>
+      <div className={cx('px-5 py-5 sm:px-6', bodyClassName)}>{children}</div>
     </section>
   );
 }

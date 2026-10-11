@@ -14,10 +14,10 @@ export function BrandMark({ className }: { className?: string }) {
 export function Wordmark({ className, sub }: { className?: string; sub?: string }) {
   return (
     <span className={cx('flex items-center gap-2.5', className)}>
-      <BrandMark />
+      <BrandMark className="size-10 shrink-0" />
       <span className="flex flex-col leading-tight">
-        <span className="text-[15px] font-semibold tracking-tight text-ink">Pakka Sauda</span>
-        {sub ? <span className="text-[11px] text-ink-muted">{sub}</span> : null}
+        <span className="whitespace-nowrap text-[17px] font-bold tracking-tight text-ink">Pakka Sauda</span>
+        {sub ? <span className="mt-1 text-[10px] font-medium tracking-wider text-ink-muted">{sub}</span> : null}
       </span>
     </span>
   );

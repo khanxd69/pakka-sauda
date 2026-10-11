@@ -7,7 +7,7 @@ import type { ReferencePrice } from '@/lib/types';
 export function RefPriceStrip({ prices }: { prices: ReferencePrice[] }) {
   if (prices.length === 0) return null;
   return (
-    <div className="flex flex-wrap items-stretch overflow-hidden rounded-xl border border-line bg-surface shadow-card">
+    <div className="flex flex-wrap items-stretch overflow-hidden rounded-2xl border border-line bg-surface shadow-card">
       <div className="flex w-full items-center gap-2 border-b border-line bg-subtle px-4 py-3 text-[13px] font-medium text-ink-muted sm:w-auto sm:border-e sm:border-b-0">
         <LineChart className="size-4" strokeWidth={1.5} aria-hidden />
         Reference prices · potato

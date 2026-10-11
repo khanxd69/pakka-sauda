@@ -13,7 +13,7 @@ export function NavLink({ href, children, variant = 'sidebar', exact = false }: 
       <Link
         href={href}
         aria-current={active ? 'page' : undefined}
-        className={cx('flex flex-1 flex-col items-center gap-1 py-2 text-[11px] font-medium transition-colors [&_svg]:size-5', active ? 'text-brand' : 'text-ink-muted')}
+        className={cx('flex min-h-14 flex-1 flex-col items-center justify-center gap-1 py-3 text-[11px] font-medium transition-colors [&_svg]:size-5', active ? 'bg-brand-soft/60 text-brand' : 'text-ink-muted hover:bg-subtle')}
       >
         {children}
       </Link>
@@ -24,8 +24,8 @@ export function NavLink({ href, children, variant = 'sidebar', exact = false }: 
       href={href}
       aria-current={active ? 'page' : undefined}
       className={cx(
-        'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-150 [&_svg]:size-4 [&_svg]:shrink-0',
-        active ? 'bg-brand-soft font-medium text-brand' : 'text-ink-muted hover:bg-subtle hover:text-ink',
+        'flex min-h-12 items-center gap-3 rounded-xl px-4 py-3 text-sm transition-colors duration-150 [&_svg]:size-[18px] [&_svg]:shrink-0',
+        active ? 'bg-brand font-medium text-white shadow-card' : 'text-ink-muted hover:bg-subtle hover:text-ink',
       )}
     >
       {children}

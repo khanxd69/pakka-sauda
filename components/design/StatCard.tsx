@@ -34,13 +34,13 @@ export function StatCard({
   className?: string;
 }) {
   return (
-    <div className={cx('flex min-w-0 flex-col gap-3 rounded-xl border border-line bg-surface p-4 shadow-card sm:p-5', className)}>
+    <div className={cx('flex min-w-0 flex-col gap-4 rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-6', emphasis && 'border-brand/20 bg-brand-soft/50', className)}>
       <div className="flex items-center justify-between gap-2">
         <span className="text-[13px] font-medium text-ink-muted">{label}</span>
-        {icon ? <span className="text-ink-muted [&_svg]:size-4">{icon}</span> : null}
+        {icon ? <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand [&_svg]:size-[18px]">{icon}</span> : null}
       </div>
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <span className={cx('whitespace-nowrap font-semibold tabular-nums tracking-tight text-ink', emphasis ? 'text-[32px] leading-none' : 'text-2xl leading-none')}>{value}</span>
+        <span className={cx('break-words font-semibold tabular-nums tracking-tight text-ink', emphasis ? 'text-[32px] leading-tight' : 'text-2xl leading-tight')}>{value}</span>
         {spark ? <Sparkline values={spark} /> : null}
       </div>
       {sub ? <span className="text-xs text-ink-muted">{sub}</span> : null}
